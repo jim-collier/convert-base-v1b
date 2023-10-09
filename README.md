@@ -1,6 +1,10 @@
 # x9convertbase
 Converts arbitrarily large numbers between 23 prededined standard and custom bases.
 
+The actual command is `x9convertbase1` (note the number on the end), because it will be very important to always give identical output, given the same arguments. However, over a future many years, there will easily be myriad good reasons for the output to change. To avoid overwriting an old script on a running system that may rely on it and it's predictable output, a new suffix number will be given to future scripts if the output changes, and the two will coexist. That the existing version has a number, indicates that expected inevitability now.
+
+## Output bases
+
 | Base        | Description                                                 | Characters                        | Reference
 |:---         |:---                                                         |:---                               |:---
 | 2           | aka Binary                                                  | 0,1 
