@@ -14,14 +14,11 @@
 # shellcheck disable=2181
 
 ##	Purpose: See fPrint_About() below.
-##	History:
-##		- 20230830 JC: Created from x9bsnaps as template.
-##		- 20230901-0920 JC: Added bases and polished 'j1' character sets.
-##		- 20230924 JC: Bug fix, inability to --lcase base 26.
-##		- 20260411 JC: Removed base94ascii. There is some bug that puts filenames on the filesystem into the output. But it's not an important base to include.
 ##	Notes:
+##		- THIS SCRIPT IS MANAGED ON GITHUB.
 ##		- See bottom of file for examples of numbers in various bases, and the space-saving percentages.
-##		- THIS IS VERSION MANAGED ON GITHUB.
+##	Copyright and license ...: Toward bottom of this file.
+##	History .................: At bottom of this file.
 
 
 ## Boilerplate constants (but don't actually make read-only because of errors during script-managed recursion).
@@ -2490,3 +2487,28 @@ _fdbgEgress
 ##		128[j1]         5  ⍋2⁑▿▿
 ##		256[j1]         5  5Ϡ🜿Ǒs
 ##		288[j1]         5  3ѢŔ9⅕
+
+
+##	Copyright
+##		Copyright © 2022-2026 Jim Collier (ID: 1cv◂‡Vᛦ)
+##		Licensed under the GNU General Public License v2.0 or later. Full text at:
+##			https://spdx.org/licenses/GPL-2.0-or-later.html
+##		SPDX-License-Identifier: GPL-2.0-or-later
+##			Preamble:
+##				This program is free software: you can redistribute it and/or modify
+##				it under the terms of the GNU General Public License as published by
+##				the Free Software Foundation, either version 2 of the License, or
+##				(at your option) any later version.
+##
+##				This program is distributed in the hope that it will be useful,
+##				but WITHOUT ANY WARRANTY; without even the implied warranty of
+##				MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##				GNU General Public License for more details.
+##
+##				You should have received a copy of the GNU General Public License
+##				along with this program.  If not, see <https://www.gnu.org/licenses/>.
+##	History:
+##		- 20230830 JC: Created from x9bsnaps as template.
+##		- 20230901-0920 JC: Added bases and polished 'j1' character sets.
+##		- 20230924 JC: Bug fix, inability to --lcase base 26.
+##		- 20260411 JC: Removed base94ascii. There is some bug that puts filenames on the filesystem into the output. But it's not an important base to include.
