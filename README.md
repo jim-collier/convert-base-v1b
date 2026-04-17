@@ -36,7 +36,19 @@
 
 Converts arbitrarily large numbers between most common prededined standard, and large custom bases - up to base-288.
 
-_Note: The command has a version number on the end, because it will be very important to always give identical output, given the same arguments. However, in the future there may be good reasons for the output to change. (Since there are no "official standards" for large bases above 94 as of time of writing.) So to avoid overwriting an old script on a running system that may rely on it and it's predictable output, a new suffix number will be given to future programs if the output changes, and the two will coexist. That the existing version has a number, indicates that expected inevitability now._
+Why convert a number to a large base? Mostly, to represent it in a more compact form. For example, converting a large number from base-10 to base-128, can be represented in about half the number of characters. For example, POSIX time (the number of seconds since 1970) can be used as a "unique" serial value, in a shorter form. For example, "2026-01-01 @ 12:15 PM" could be represented as "1fLcL4" in standard base-64url, or "£±Яᛯ" in base-256.
+
+At larger non-standard bases, careful effort was made to:
+
+- Avoid ambiguous characters that look like existing 0-9 A-Z ASCII characters and symbols.
+
+- Avoid characters that are too wide and render poorly on fixed-width terminals.
+
+- Avoid reserved characters across multiple operating systems and web standards, so that output can be used in those contexts. (Except for predefined standard base definitions that specicy such characters, e.g. regular base-64.)
+
+- Keep the character selection consistent across bases.
+
+_Note: The command `convert-base-v1` has a version number on the end, because it will be very important to always give identical output, given the same arguments. However, in the future there may be good reasons for the output to change. For example, there are no "official standards" for large bases above 94 as of time of writing, but that could change. So to avoid overwriting an old script on a running system that may rely on it and it's predictable output, a new suffix number will be given to future programs if the output changes, and the two will coexist. That the existing version has a number, indicates that expected inevitability now._
 
 <!-- TOC ignore:true -->
 ## Table of contents
@@ -44,6 +56,7 @@ _Note: The command has a version number on the end, because it will be very impo
 <!-- TOC -->
 
 - [Output bases](#output-bases)
+- [Example output](#example-output)
 - [Document history](#document-history)
 - [Copyright and license](#copyright-and-license)
 
@@ -79,10 +92,40 @@ _Note: The command has a version number on the end, because it will be very impo
 | 94[ascii]   | All lower ASCII chars + space (all typable US keyboard)
 -->
 
+## Example output
+
+The chart below shows a big random base 10 number '2023090613425900000000000000001' in various bases.
+
+Note that some of the larger bases appear to have longer output - but that's only due to being renedered with proportional fonts, combined with some of the wider Unicode characters. Look at the "Chars" column to see the actual # of characters in the output.
+
+|Base        | Chars | Number representation
+|:--         | --:   | :--
+|   2        |   101 | 11001100010001111010101010101001101101001000111010011010010010010001000110101111111100000000000000001
+|   8        |    34 | 3142172525155107232222106577400001
+|  10        |    31 | __2023090613425900000000000000001__
+|  16        |    26 | 1988F5553691D3492235FE0001
+|  26        |    22 | DXNNAGDDUWPNKQIDYGEAMJ
+|  32[r]     |    21 | BTCHVKU3JDU2JEI274AAB
+|  32h       |    21 | 1J27LAKR93KQ948QVS001
+|  32c       |    21 | 1K27NAMV93MT948TZW001
+|  32w       |    21 | 3X49fGcqF5cpF6Cpxr223
+|  36        |    20 | 5G53VAIZAJBZ2D5Y2Y9T
+|  48j1      |    19 | 153ᚼᛦ🜥⁑h҂▵ᛦ🜿▿▸▿2q🜥q
+|  52        |    18 | NftxKBqjrhTdQKHAGJ
+|  62        |    17 | gR7BplOIkweh9aKht
+|  64[r]     |    17 | PYFLLDf7JII8r/W01
+|  64u       |    17 | PYFLLDf7JII8r_W01
+|  64j1u     |    17 | PYFLLDf7JII8rʞW01
+|  64j1uw    |    17 | hλMXXHᛝ7VRR8▸≠w01
+|  94[ascii] |    16 | %+(A}'O^UwzN_{sS
+| 128[j1]    |    15 | 6🜥Mᛦ⍩ÑQŵʬμʞᚼä01
+| 256[j1]    |    13 | Pĵㅍ‡sĨǍᚧYrぇ01
+| 288[j1]    |    13 | 6zф⅖ẄÃЋゲㅎぇúkᛎ
+
 ## Document history
 
 - 2023-10-09: First version.
-- 2026-04-17: Added more sections. Removed custom base 94ascii.
+- 2026-04-17: Added more sections. Removed custom base 94ascii. Added example output (already in the script).
 
 ## Copyright and license
 
