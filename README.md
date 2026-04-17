@@ -55,12 +55,23 @@ _Note: The command `convert-base-v1` has a version number on the end, because it
 
 <!-- TOC -->
 
+- [Limitations](#limitations)
 - [Output bases](#output-bases)
 - [Example output](#example-output)
 - [Document history](#document-history)
 - [Copyright and license](#copyright-and-license)
 
 <!-- /TOC -->
+
+## Limitations
+
+Currently, two-way conversion is only possible up to base-36.
+
+In other words, you can convert any base from base-2 up to base-36, to any other output base larger or smaller.
+
+But beyond base-36 (e.g. base-64, base-256, etc.), it's a one-way function - you can only get bases larger than 36, as output. Which sort of acts like a one-way hash function - which can be very useful, but is something you need to be aware of it.
+
+While this script will be supported indefinitely into the future (as it's used in production evnironments), it's unlikely to ever support bases >36 as input. That is for a planned `-v2` binary executable.
 
 ## Output bases
 
