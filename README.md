@@ -40,11 +40,11 @@
 <!-- TOC -->
 
 - [Introduction](#introduction)
-- [Why have a version in the command name](#why-have-a-version-in-the-command-name)
 - [Limitations](#limitations)
 - [Input bases](#input-bases)
 - [Output bases](#output-bases)
 - [Example output](#example-output)
+- [Why have a version in the command name](#why-have-a-version-in-the-command-name)
 - [Document history](#document-history)
 - [Copyright and license](#copyright-and-license)
 
@@ -65,20 +65,6 @@ At larger non-standard bases, careful effort was made to:
 - Avoid reserved characters across multiple operating systems and web standards, so that output can be used in those contexts. (Except for predefined standard base definitions that specify such characters, e.g. regular base-64.)
 
 - Keep the character selection consistent across bases.
-
-## Why have a version in the command name
-
-...because of the combination of these factors:
-
-- As with any program dealing with numbers, it could be critical to always give identical output, given the same arguments.
-
-- In the future there may be good reasons for the output to change, for given arguments. (And/Or the expected arguments themselves might change.) For example, there are no "official standards" for large bases above 94 as of time of writing, but that could change. And even anything above 16, in most cases is fair game.
-
-- `v1` already had enough very minor issues - including allowing referencing bases by number-only that have no standard or even wide adoption (but might in the future) - that fixing them changed the output for given test input. It changed for the better and is now more pedantically accurate, but in a significant enough of a breaking way to warrant a different, non-colliding name.
-
-	Hence this can no longer be named `v1`. The "legacy" `v1` will continue to live on in some systems where needed.
-
-	But `v2` is already underway, so this is now `v1b` for brevity. (Independent of the standard internal semantic naming convention adhered to.)
 
 ## Limitations
 
@@ -163,6 +149,20 @@ Note that some of the larger bases appear to have longer output - but that's onl
 | 128j1       |     |
 | 256j1       |    13 | Pĵㅍ‡sĨǍᚧYrぇ01
 | 288j1       |    13 | 6zф⅖ẄÃЋゲㅎぇúkᛎ
+
+## Why have a version in the command name
+
+...because of the combination of these factors:
+
+- As with any program dealing with numbers, it could be critical to always give identical output, given the same arguments.
+
+- In the future there may be good reasons for the output to change, for given arguments. (And/Or the expected arguments themselves might change.) For example, there are no "official standards" for large bases above 94 as of time of writing, but that could change. And even anything above 16, in most cases is fair game.
+
+- `v1` already had enough very minor issues - including allowing referencing bases by number-only that have no standard or even wide adoption (but might in the future) - that fixing them changed the output for given test input. It changed for the better and is now more pedantically accurate, but in a significant enough of a breaking way to warrant a different, non-colliding name.
+
+	Hence this can no longer be named `v1`. The "legacy" `v1` will continue to live on in some systems where needed.
+
+	But `v2` is already underway, so this is now `v1b` for brevity. (Independent of the standard internal semantic naming convention adhered to.)
 
 ## Document history
 
