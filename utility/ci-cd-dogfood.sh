@@ -18,13 +18,12 @@
 ## shellcheck disable=2143  ## 'Use grep -q instead of echo | grep'
 
 ##	Purpose: See fAbout() below.
+##	History: At bottom of this file. (Note: History for this is maintained outside of [or in addition to] git project.)
 
-##	Copyright
-##		Copyright © 2026 Jim Collier (ID: 1cv◂‡Vᛦ)
-##		Licensed under the GNU General Public License v2.0 or later. Full text at:
-##			https://spdx.org/licenses/GPL-2.0-or-later.html
-##		SPDX-License-Identifier: GPL-2.0-or-later
-##	History .................: At bottom of this file.
+##	Copyright © 2022-2026 Jim Collier (ID: 1cv◂‡Vᛦ)
+##	Licensed under the GNU General Public License v2.0 or later. Full text at:
+##		https://spdx.org/licenses/GPL-2.0-or-later.html
+##	SPDX-License-Identifier: GPL-2.0-or-later
 
 
 #•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
@@ -32,8 +31,8 @@
 if [[ -z "${doQuietly+x}" ]]; then
 
 	## Settings
-	declare    dirPath_Source="../src"
-	declare    filePath_ExecToTestAndInstall="${dirPath_Source}/convert-base-v2"
+	declare    dirPath_Source=".."
+	declare    filePath_ExecToTestAndInstall="${dirPath_Source}/convert-base-v1b"
 	declare    filePath_TestExec="../test/test.sh"
 	declare    gitAutomationScript="n8git_backup-and-publish"
 	declare -a preferredInstallPaths=("${HOME}/synced/0-0/common/exec/util/linux/bin"  "/usr/local/sbin/")  ## First one that exists, wins
@@ -42,7 +41,7 @@ if [[ -z "${doQuietly+x}" ]]; then
 	declare  -i doQuietly=0
 	declare  -i doPromptToContinue=1
 	declare -r  thisVersion="1.0.0-beta.1"         ## Put you script's semantic version here.
-	declare -r  thisBuild="20260420-074241"
+	declare -r  thisBuild="20260423-140709"
 	declare -r  thisCopyrightYear="2026"           ## Put your copyright date here.
 	declare -r  thisAuthor="Jim Collier"           ## Put your copyright name here.
 	declare -ri atLeastOneArgRequired=0
@@ -64,11 +63,9 @@ fAbout(){ { ((doQuietly)) || ((wasShown_About)); } && return; wasShown_About=1;
 	fEcho_Clean ""
 	#           X-------------------------------------------------------------------------------X
 	fEcho_Clean "CI/CD and dogfood:"
-	fEcho_Clean "  • Builds the program. If successful:"
-	fEcho_Clean "    • Cross-compile more versions. If those succeed:"
-	fEcho_Clean "      • Run automated tests. If tests pass:"
-	fEcho_Clean "        • Update locally-installed version to what was just compiled."
-	fEcho_Clean "        • Run git automation script (e.g. commit and push)."
+	fEcho_Clean "  • Run automated tests. If tests pass:"
+	fEcho_Clean "    • Update locally-installed version."
+	fEcho_Clean "    • Run git automation script (e.g. commit and push)."
 	#           X-------------------------------------------------------------------------------X
 	fEcho_Clean "" ;:;}
 fSyntax(){  { ((doQuietly)) || ((wasShown_Syntax)); } && return; wasShown_Syntax=1;
@@ -151,26 +148,6 @@ fMain(){
 
 	cd "${dirPath_me}/.."
 	pushd "${dirPath_Source}" 1>/dev/null
-
-	## make
-	fEcho "$(date "+%Y%m%d-%H%M%S") make: Starting ..."
-	make
-	fEcho "$(date "+%Y%m%d-%H%M%S") Minimal execution test ..."
-	"${filePath_ExecToTestAndInstall}"  --version
-	sleep 1  ## Long enough to see version
-
-	## Hide single exe
-	[[ -f "${filePath_ExecToTestAndInstall}_staged" ]]  &&  trash "${filePath_ExecToTestAndInstall}_staged"
-	mv "${filePath_ExecToTestAndInstall}"  "${filePath_ExecToTestAndInstall}_staged"
-
-	## Make release (part of testing - if they don't cross-compile then there' a problem)
-	fEcho
-	fEcho "$(date "+%Y%m%d-%H%M%S") make release: Starting ..."
-	make release
-	fEcho_ResetBlankCounter
-
-	##Unhide single executable for testing and local installation
-	mv "${filePath_ExecToTestAndInstall}_staged"  "${filePath_ExecToTestAndInstall}"
 
 	## Test
 	fEcho "$(date "+%Y%m%d-%H%M%S") Test: Starting ..."
@@ -439,7 +416,9 @@ fPressAnyKeyToContinue(){
 declare -i _wasLastEchoBlank=0
 declare -i _isEchoInRawInlineMode=0
 fEcho_ResetBlankCounter()     { _wasLastEchoBlank=0;      }
-fEcho_IsInRawInlineMode_Set() { [[ "${1}" == "1" ]]  &&  _isEchoInRawInlineMode=1; }  ## Script it telling fEcho* that something is going to be echoing to the screen in non-linefeed mode without its knowledge. (E.g. "echo -n 'something: '".)
+fEcho_WasLastEchoBlank_Set()  { { [[ "${1}" == "1" ]]  &&  _wasLastEchoBlank=1; }  ||  _wasLastEchoBlank=0;  }
+fEcho_WasLastEchoBlank_Get()  { { ((_wasLastEchoBlank > 0))  &&  return 0; }  ||  return 1; }
+fEcho_IsInRawInlineMode_Set() { { [[ "${1}" == "1" ]]  &&  _isEchoInRawInlineMode=1; }  ||  _isEchoInRawInlineMode=1; }  ## Script it telling fEcho* that something is going to be echoing to the screen in non-linefeed mode without its knowledge. (E.g. "echo -n 'something: '".)
 fEcho_IsInRawInlineMode_Get() { { ((_isEchoInRawInlineMode))  &&  return 0; }  ||  return 1; }
 fEcho_Clean(){
 	((_isEchoInRawInlineMode))  &&  { echo; _wasLastEchoBlank=0; _isEchoInRawInlineMode=0; }
@@ -550,22 +529,7 @@ fi
 
 
 
-##	SPDX-License-Identifier: GPL-2.0-or-later
-##	Preamble:
-##		This program is free software: you can redistribute it and/or modify
-##		it under the terms of the GNU General Public License as published by
-##		the Free Software Foundation, either version 2 of the License, or
-##		(at your option) any later version.
-##
-##		This program is distributed in the hope that it will be useful,
-##		but WITHOUT ANY WARRANTY; without even the implied warranty of
-##		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##		GNU General Public License for more details.
-##
-##		You should have received a copy of the GNU General Public License
-##		along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
 ##	Script history:
-##		- 202260420 JC: Created.
-##		- 202260421 JC: Finished.
+##		- 20260420 JC: Created.
+##		- 20260421 JC: Finished.
+##		- 20260422-23 JC: Copied and updated for convert-base-v1b.

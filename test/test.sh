@@ -14,32 +14,43 @@
 # shellcheck disable=2181
 
 
+##	Purpose: CI/CD-friendly test harness that passes or fails.
+##	History: At bottom of this file. (Note: History for this is maintained outside of [or in addition to] git project.)
+
 ##	Copyright
 ##		Copyright © 2026 Jim Collier (ID: 1cv◂‡Vᛦ)
 ##		Licensed under the GNU General Public License v2.0 or later. Full text at:
 ##			https://spdx.org/licenses/GPL-2.0-or-later.html
 ##		SPDX-License-Identifier: GPL-2.0-or-later
-##	History .................: At bottom of this file. (Note: History for this maintained outside of [or in addition to] git project.)
 
 
 ## Settings
-declare -r exePath="$(realpath -e "$(dirname "${0}")/../convert-base-v1")"
+declare -r exePath="$(realpath -e "$(dirname "${0}")/../convert-base-v1b")"
 
 
 fUnitTest(){
 	local inputVal=""  expectVal=""  gotVal=""  tmpVal=""
 
 	fEcho_Clean; fEcho_Clean "${exePath}"
-	"${exePath}" --version ; fEcho_WasLastEchoBlank_Set 1 ; sleep 2
+	"${exePath}" --version ; fEcho_WasLastEchoBlank_Set 1 ; sleep 1
 
-	## Expect equal - base-65536 with big number [known bug]
 	inputVal="00012345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
+
+	## Round-trips
+
 	expectVal="12345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
 	fRunChained_TestLast  '=='  "'${exePath}'  --ibase 10  ${inputVal}  base16 ; '${exePath}'  --ibase 16  %CMD1_OUTPUT%  base10"
 
-	inputVal="00012345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
+	## One-way
+
+	#expectVal="$(convert-base-v1  "${inputVal}"  128j1)"  #; echo "${expectVal}"
 	expectVal="ẽ🝅q¥fᚧ▵jj⍩Ξ4⍩ŷᚠMϠÿ≈⍤prẌŶãʞ1HÃ⍋ϟ‡mpcδñjĥWHᚼh▿ĉp⍢ỹʬ1QfẅF1VpλμɤЖG2ĵ5Ϡ⍋Éw≠Éẍ🝅ᛘẅμ"
-	fRunTest  '=='  "'${exePath}'  ${inputVal}  128j1w"
+	fRunTest  '=='  "'${exePath}'  ${inputVal}  128v1compat"
+
+	#expectVal="$(convert-base-v2  "${inputVal}"  128jc)"  # ; echo "${expectVal}" | ct
+	expectVal="⍩pT🜿NjqQQ҂ᛏ4҂¥iFᛯÔʞ◂SUĈδ⍤Y1D§±ᛦvRSMᛝ⌲QѢKDlPsЋS÷⍋▿1HNÎB1JSZa▸ᚠC2ф5ᛯ±ŴWλŴĴpdÎa"
+	fRunTest  '=='  "'${exePath}'  ${inputVal}  128j1"
+
 
 :;}
 
@@ -206,6 +217,7 @@ trap '{ ((isExpectingError))  &&  ((++count_Errors_Expected)); }  ||  ((++count_
  shopt -s globstar  #..........: ** matches more stuff including recursion.
 
 fMain
+
 
 
 
