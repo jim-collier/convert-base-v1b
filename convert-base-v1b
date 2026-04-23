@@ -17,24 +17,29 @@
 ##	Notes:
 ##		- THIS SCRIPT IS MANAGED ON GITHUB.
 ##		- See bottom of file for examples of numbers in various bases, and the space-saving percentages.
-##	Copyright and license .........: Toward bottom of this file.
-##	History .......................: At bottom of this file.
-##	Evaluation of Unicode chars ...: Near bottom of this file.
+##	History: At bottom of this file. (Note: History for this is maintained outside of [or in addition to] git project.)
+
+##	Copyright © 2022-2026 Jim Collier (ID: 1cv◂‡Vᛦ)
+##	Licensed under the GNU General Public License v2.0 or later. Full text at:
+##		https://spdx.org/licenses/GPL-2.0-or-later.html
+##	SPDX-License-Identifier: GPL-2.0-or-later
 
 
 ## Boilerplate constants (but don't actually make read-only because of errors during script-managed recursion).
 declare -i    doDebug=0
 declare -i    runAsSudo=0
 declare -i    doQuietly=0; [[ "${X9CONVERTBASE1_QUIET}" == "1" ]] && doQuietly=1
-declare       thisVersion="1.1.0"
+declare       thisVersion="v1.0.0-beta1"
 declare       copyrightYear="2023-2026"
-declare       author="Jim Collier"
+declare       author="Jim Collier (ID: 1cv◂‡Vᛦ)"
 
 
 fPrint_About(){
 	((doQuietly))  &&  return
 	fEcho_Clean ""
-	fEcho_Clean "Converts from some bases to a wide variety of others."
+	fEcho_Clean "Converts from some bases to a wide variety of others. Strictly positional"
+	fEcho_Clean "notation conversion, not for binary-to-text encoding/decoding. (Though you"
+	fEcho_Clean "can use the same common 2^N encoding bases as positional notation.)"
 	fEcho_Clean ""
 }
 
@@ -59,51 +64,54 @@ fPrint_Syntax(){
 	fEcho_Clean "        8 ....: aka Octal .................. 0-7"
 	fEcho_Clean "       10 ....: aka Decimal [default] ...... 0-9"
 	fEcho_Clean "       16 ....: aka Hexedecimal ............ 0-9, A-F"
-	fEcho_Clean "       32[r]..: RFC 4648 ................... A-Z, 2-7" #.......................... https://en.wikipedia.org/wiki/Base32
-	fEcho_Clean "       32h ...: RFC 4648 §7, 'Base32Hex' ... 0-9, A-V" #.......................... https://datatracker.ietf.org/doc/html/rfc4648#section-7
+	fEcho_Clean "       32[h] .: RFC 4648 §7, 'Base32Hex' ... 0-9, A-V" #.......................... https://datatracker.ietf.org/doc/html/rfc4648#section-7
+	fEcho_Clean "       32r ...: RFC 4648 §6 ................ A-Z, 2-7" #.......................... https://en.wikipedia.org/wiki/Base32
 	fEcho_Clean "       32w ...: Wordsafe Base32 ............ 2-9, CFGHJMPQRVWX, cfghjmpqrvwx" #... https://en.wikipedia.org/wiki/Base32#Word-safe_alphabet
 	fEcho_Clean "       36 ....: Just alphanum .............. 0-9, A-Z" #.......................... https://en.wikipedia.org/wiki/Base36
 	fEcho_Clean "       62 ....: All alphanum ............... 0-9, A-Z, a-z" #..................... https://en.wikipedia.org/wiki/Base62
-	fEcho_Clean "       64[r]..: RFC 4648 ................... 0-9, A-Z, a-z, +, /" #............... https://en.wikipedia.org/wiki/Base64
-	fEcho_Clean "       64u ...: RFC 4648 §5; URL-safe ...... 0-9, A-Z, a-z, -, _" #............... https://en.wikipedia.org/wiki/Base64#Variants_summary_table
+	fEcho_Clean "       64r....: RFC 4648 §4 ................ A-Z, a-z, 0-9, +, /" #............... https://en.wikipedia.org/wiki/Base64
+	fEcho_Clean "       64u ...: RFC 4648 §5, URL-safe ...... A-Z, a-z, 0-9, -, _" #............... https://en.wikipedia.org/wiki/Base64#Variants_summary_table
 	fEcho_Clean "    De-facto standards:"
 	fEcho_Clean "       26 ....: One-case alphabetic ........ A-Z"
 	fEcho_Clean "       32c ...: Crockford's Base32 ......... 0-9, A-Z no I, L, O, U" #............ https://en.wikipedia.org/wiki/Base32#Crockford's_Base32
 	fEcho_Clean "       52 ....: Both-case alphabetic ....... A-Z, a-z"
 	fEcho_Clean "    Very slightly custom:"
-	fEcho_Clean "       64j1u..: Alternate to 64u but also programmer-friendly"
+	fEcho_Clean "       64[h] .: Hex like, URL-safe ......... 0-9, A-Z, a-z, -, _" #............... https://en.wikipedia.org/wiki/Base64#Variants_summary_table
 	fEcho_Clean "    Custom word-safe, URL-safe, filesystem-safe, programmer-friendly:"
-	fEcho_Clean "       48j1w..: 0-9, cfghjmpqrvwx, and lots of unicode symbols"
-	fEcho_Clean "       64j1w..: 0-9, Like 48j1w but with upper-case too"
-	fEcho_Clean "      128j1w..: Like 64j1w but with way more unicode symbols"
-	fEcho_Clean "    Custom URL-safe, filesystem-safe, programmer-friendly:"
-	fEcho_Clean "      256j1 ..: Base 62 + lots of unicode chars"
-	fEcho_Clean "      288j1 ..: 256j1 + 32 more unicode chars"
-	fEcho_Clean "    Special-purpose bases [not very useful for output-only bases]:"
+	fEcho_Clean "       48j1w .: Base 32w + unicode symbols"
+	fEcho_Clean "       64j1w .: Base 48j1w + more unicode symbols"
+	fEcho_Clean "      128j1w .: Base 64j1w + more unicode symbols"
+	fEcho_Clean "    Custom [not word-safe], URL-safe, filesystem-safe, programmer-friendly:"
+	fEcho_Clean "       64j1 ..: Base 62, +2 unicode symbols"
+	fEcho_Clean "      128j1 ..: Base  64j1 + more unicode symbols"
+	fEcho_Clean "      256j1 ..: Base 128j1 + more unicode symbols"
+	fEcho_Clean "      288j1 ..: Base 256j1 + more unicode symbols"
+	fEcho_Clean "    Special-purpose bases:"
 	fEcho_Clean "      38hostname: Valid *nix host and domain name characters"
 	fEcho_Clean "      39username: Valid *nix username characters"
-#		fEcho_Clean "      94[ascii] : All lower ASCII chars+space; all typable US keyboard keys"
+	fEcho_Clean "      45email:    Valid HTML5 <email> address characters"
+	fEcho_Clean "    v1 backwards-compatiable 'incongruous' wordsafe bases:"
+	fEcho_Clean "      48v1compat, 64v1compat, 128v1compat"
 	fEcho_Clean "  Valid values for --ibase:"
 	fEcho_Clean "    2, 8, 10, 16, 36"  ## Note: You might think that base32/base64 might work, but those must be values at 32 or 64-bit boundaries. Maybe they could be padded in a future update?
-	fEcho_Clean "Notes:"
-	fEcho_Clean "  ▸ Base 32 and 64 are often used for binary streaming data, but there's no"
-	fEcho_Clean "    reason to not use them for numeric base conversion."
-	fEcho_Clean "  ▸ All bases are human-readable/comparable. But not even RFC standard bases >36"
-	fEcho_Clean "    will machine-sort properly with common sort regimes, eg LC_COLLATE=C.UTF-8."
+#	fEcho_Clean "Notes:"
+#	fEcho_Clean "  ▸ Base 32 and 64 are often used for streaming binary-to-text encoding/de-"
+#	fEcho_Clean "    coding, but there's no reason you can't use them for positional notation."
+#	fEcho_Clean "  ▸ All bases are human-readable/comparable. But not even RFC standard bases >36"
+#	fEcho_Clean "    will machine-sort properly with common sort regimes, eg LC_COLLATE=C.UTF-8."
 	#           X"-------------------------------------------------------------------------------"X
 }
 
 fPrint_Copyright(){
 	((doQuietly))  &&  return
 	fEcho_Clean ""
-	fEcho_Clean "${meName} version ${thisVersion}"
-	fEcho_Clean "Copyright (c) ${copyrightYear} ${author}."
-	fEcho_Clean "License GPLv3+: GNU GPL version 3 or later, full text at:"
-	fEcho_Clean "    https://www.gnu.org/licenses/gpl-3.0.en.html"
+	fEcho_Clean "${meName} v${thisVersion} build ${thisBuild},"
+	fEcho_Clean "Copyright © ${thisCopyrightYear} ${thisAuthor}."
+	fEcho_Clean "Licensed under the GNU General Public License v2.0 or later. Full text at:"
+	fEcho_Clean "  https://spdx.org/licenses/GPL-2.0-or-later.html"
 	fEcho_Clean "There is no warranty, to the extent permitted by law."
 	fEcho_Clean ""
 }
-
 
 fMain(){
 
@@ -119,39 +127,47 @@ fMain(){
 	local -a allArgs=()
 
 	## Standardized bases
-	local -ar b2=($(echo {0..1}))
-	local -ar b8=($(echo {0..7}))
-	local -ar b10=($(echo {0..9}))
-	local -ar b16=($(echo {0..9} {A..F}))
-	local -ar base32r=($(echo {A..Z} {2..9})) #.............................................. RFC 4648
+	local -ar base2=($(echo {0..1}))
+	local -ar base8=($(echo {0..7}))
+	local -ar base10=($(echo {0..9}))
+	local -ar base16=($(echo {0..9} {A..F}))
 	local -ar base32h=($(echo {0..9} {A..V})) #.............................................. RFC 4648 hex
+	local -ar base32r=($(echo {A..Z} {2..9})) #.............................................. RFC 4648
 	local -ar base32w=(2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x) #.... Wordsafe
-	local -ar base36=($(echo {0..9} {A..Z})) #............................................... Base36
-	local -ar base62=($(echo {0..9} {A..Z} {a..z})) #........................................ Base62
 	local -ar base64r=($(echo {A..Z} {a..z} {0..9} "+ /")) #................................. RFC 4648
-	local -ar base64u=($(echo {A..Z} {a..z} {0..9}"- _")) #.................................. RFC 4648 url-safe variant
+	local -ar base64u=($(echo {A..Z} {a..z} {0..9} "- _")) #................................. RFC 4648 url-safe variant
 
 	## De-facto standards
 	local -ar base26=($(echo {A..Z}))
 	local -ar base32c=(0 1 2 3 4 5 6 7 8 9 A B C D E F G H J K M N P Q R S T V W X Y Z) #.... Crockford; no I, L, O, U; one famous programmer's proposal that has become a more-or-less de-facto accepted standard variant.
+	local -ar base36=($(echo {0..9} {A..Z})) #............................................... Base36
 	local -ar base52=($(echo {A..Z} {a..z}))
+	local -ar base62=($(echo {0..9} {A..Z} {a..z})) #........................................ Base62
 
 	## Very slight custom modifications
-	local -ar base64j1=($(echo {0..9} {A..Z} {a..z} "ʞ λ")) #............................... Custom programmer-safe unicode symbol variant
+	local -ar base64h=($(echo {0..9} {A..Z} {a..z} "- _")) #................................. Hex-style base 64
+	local -ar base64j1=($(echo {0..9} {A..Z} {a..z} "ʞ λ")) #................................ Like 64h but more programmer (and visually) friendly +2 chars at the end. 1% more bytes that 64r|u on average for UTF-8 encoding, if evenly-distributed.
 
 	## Custom 'word-safe', URL-safe, filesystem-safe, and programmer-friendly variants that strive to be CLI-width-friendly (but may not always render properly in every terminal or program with every font).
-	local -ra base48j1w=(0 1 2 3 4 5 6 7 8 9 c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑)
-	local -ra base64j1w=(0 1 2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠)
-	local -ra base128j1w=(0 1 2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Ĵ Ŝ Ŵ Ŷ â ĉ ê ĝ ĥ ĵ ŝ ŵ ŷ Ã Ẽ Ñ Ỹ ã ẽ ñ ỹ Ä Ë Ẅ Ẍ Ÿ ä ë ẅ ẍ ÿ Á Ć É)
+	## Note: Redefining these constitutes a breaking change with v1. But backward-compatible aliases are included below.
+	local -ra base48j1w=(2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥)
+	local -ra base64j1w=(2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ)
+	local -ra base128j1w=(2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Î Ĵ Ô Ŝ Û Ŵ Ŷ Ẑ â ĉ ê ĝ ĥ î ĵ ô ŝ û ŵ ŷ ẑ Ã Ẽ Ĩ Ñ Õ Ũ Ỹ ã ẽ ĩ ñ õ ũ ỹ Ä)
+
+	## "Incorrect" backwards-compatiable with v1: Custom 'word-safe', URL-safe, filesystem-safe, and programmer-friendly variants that strive to be CLI-width-friendly (but may not always render properly in every terminal or program with every font).
+	local -ra base48v1compat=(0 1 2 3 4 5 6 7 8 9 c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑)
+	local -ra base64v1compat=(0 1 2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠)
+	local -ra base128v1compat=(0 1 2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Ĵ Ŝ Ŵ Ŷ â ĉ ê ĝ ĥ ĵ ŝ ŵ ŷ Ã Ẽ Ñ Ỹ ã ẽ ñ ỹ Ä Ë Ẅ Ẍ Ÿ ä ë ẅ ẍ ÿ Á Ć É)
 
 	## Custom (not 'word-safe'), URL-safe, filesystem-safe, and programmer-friendly variants that strive to be CLI-width-friendly (but may not always render properly in every terminal or program with every font).
+	local -ra base128j1=(0 1 2 3 4 5 6 7 8 9 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Î Ĵ Ô Ŝ Û Ŵ)
 	local -ra base256j1=(0 1 2 3 4 5 6 7 8 9 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Î Ĵ Ô Ŝ Û Ŵ Ŷ Ẑ â ĉ ê ĝ ĥ î ĵ ô ŝ û ŵ ŷ ẑ Ã Ẽ Ĩ Ñ Õ Ũ Ỹ ã ẽ ĩ ñ õ ũ ỹ Ä Ë Ï Ö Ü Ẅ Ẍ Ÿ ä ë ï ö ü ẅ ẍ ÿ Á Ć É Ǵ Í Ń Ó Ŕ Ś Ú Ẃ Ý Ź á ć é ǵ í ń ó ŕ ś ú ẃ ý ź Ā Ē Ī Ō Ū Ȳ ā ē ī ō ū ȳ Ǎ Č Ď Ě Ǧ Ȟ Ǩ Ň Ǒ Ř Š Ǔ ǎ č ď ě ǧ ȟ ǩ ň ǒ ř š ǔ ǝ ɹ ʇ ʌ ₸ ᛬ 웃 유 ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ソ ッ ゞ ぅ ぇ ォ)
 	local -ra base288j1=(0 1 2 3 4 5 6 7 8 9 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Î Ĵ Ô Ŝ Û Ŵ Ŷ Ẑ â ĉ ê ĝ ĥ î ĵ ô ŝ û ŵ ŷ ẑ Ã Ẽ Ĩ Ñ Õ Ũ Ỹ ã ẽ ĩ ñ õ ũ ỹ Ä Ë Ï Ö Ü Ẅ Ẍ Ÿ ä ë ï ö ü ẅ ẍ ÿ Á Ć É Ǵ Í Ń Ó Ŕ Ś Ú Ẃ Ý Ź á ć é ǵ í ń ó ŕ ś ú ẃ ý ź Ā Ē Ī Ō Ū Ȳ ā ē ī ō ū ȳ Ǎ Č Ď Ě Ǧ Ȟ Ǩ Ň Ǒ Ř Š Ǔ ǎ č ď ě ǧ ȟ ǩ ň ǒ ř š ǔ ǝ ɹ ʇ ʌ ₸ ᛬ 웃 유 ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ソ ッ ゞ ぅ ぇ ォ ゲ サ じ す ス せ ち づ で ネ ビ べ ぺ ま モ ゟ ヲ ½ ⅓ ⅔ ¼ ¾ ⅕ ⅖ ⅗ ⅘ ⅙ ⅚ ⅛ ⅜ ⅝ ⅞)
 
 	## Custom; Special: ^[a-z_]([a-z0-9_-]){0,31}$; linux hostname (including domain - not case-sensitive, usually lower-case, and this is just the legal chars): [0-9a-z\-\.]
-#	declare -a base94ascii=(" "); declare -a tmpArray=($(echo "! \" # \$ % & ' ( ) * + , - . /" {0..9} ": ; < = > ? @" {A..Z} "[ \ ] ^ _ \`" {a..z} "{ | } ~")); base94ascii+=("${tmpArray[@]}"); local -ra base94ascii=("${base94ascii[@]}")  ## Space is a valid character in the array element, which is trickier to include in one go, thus this gymnastics.
 	declare -a base38hostname=($(echo {0..9} {a..z} "- ."))
 	declare -a base39username=($(echo {0..9} {a..z} "- _ ."))
+	declare -a base45email=($(echo {0..9} {a..z} "- _ % + . : @ [ ]"))
 
 		## Args (1] Define placeholder variables; 2] Call fInit() to set them; 3] Freeze them read-only.)
 	local    arg_inputVal=""
@@ -181,33 +197,17 @@ fMain(){
 	fValidate
 
 	## Lock variables down that we can
-	local -ra allArgs=("${allArgs[@]}")
-	local -r arg_inputVal="${arg_inputVal}"
-	local -r arg_inBase="${arg_inBase}"
-	local -r arg_outBase="${arg_outBase}"
-	local -r  inputVal="${inputVal}"
-#	local -r  inBase="${inBase}"  ## Can't lock this yet
-	local -r  outBase="${outBase}"
-	local -ri doLowerCase=$doLowerCase
-	local -ri doUseClipIn=$doUseClipIn
-	local -ri doUseClipOut=$doUseClipOut
-	local -ri doSilent=$doSilent
-
-	#DEBUG
-	#echo "\${allArgs[*]} = ${allArgs[*]}"
-	#echo "Arg count = ${#allArgs[@]}"
-	#fEchoVarAndVal arg_inputVal
-	#fEchoVarAndVal arg_inBase
-	#fEchoVarAndVal arg_outBase
-	#fEchoVarAndVal inputVal
-	#fEchoVarAndVal inBase
-	#fEchoVarAndVal outBase
-	#fEchoVarAndVal doLowerCase
-	#fEchoVarAndVal doUseClipIn
-	#fEchoVarAndVal doUseClipOut
-	#fEchoVarAndVal doSilent
-	#echo
-	#exit
+	readonly allArgs
+	readonly arg_inputVal
+	readonly arg_inBase
+	readonly arg_outBase
+	readonly inputVal
+#	readonly inBase   ## Can't lock this yet
+	readonly outBase
+	readonly doLowerCase
+	readonly doUseClipIn
+	readonly doUseClipOut
+	readonly doSilent
 
 	##
 	## Make it so
@@ -228,7 +228,7 @@ fMain(){
 			## Already base10
 			inputVal_base10=${inputVal}
 	esac
-	local -r inBase="${inBase}"
+	readonly inBase
 
 	## Set obase for bc (for OUTput base); just an integer.
 	bcObase=$(echo "${outBase}" | grep -iPo "[0-9]+" | head -n 1)
@@ -259,25 +259,30 @@ fMain(){
 
 	## Populate base character array
 	case "${outBase}" in
-		"26")           local -ar baseValArray=("${base26[@]}")          ;;
-		"32"|"32r"*)    local -ar baseValArray=("${base32r[@]}")         ;;
-		"32h"*)         local -ar baseValArray=("${base32h[@]}")         ;;
-		"32c"*)         local -ar baseValArray=("${base32c[@]}")         ;;
-		"32w"*)         local -ar baseValArray=("${base32w[@]}")         ;;
-		"36")           local -ar baseValArray=("${base36[@]}")          ;;
-		"38ho"*)        local -ar baseValArray=("${base38hostname[@]}")  ;;
-		"39us"*)        local -ar baseValArray=("${base39username[@]}")  ;;
-		"48j1w")        local -ar baseValArray=("${base48j1w[@]}")       ;;
-		"52")           local -ar baseValArray=("${base52[@]}")          ;;
-		"62")           local -ar baseValArray=("${base62[@]}")          ;;
-		"64"|"64r"*)    local -ar baseValArray=("${base64r[@]}")         ;;
-		"64u"*)         local -ar baseValArray=("${base64u[@]}")         ;;
-		"64j1"|"64j1u") local -ar baseValArray=("${base64j1[@]}")       ;;
-		"64j1w")        local -ar baseValArray=("${base64j1w[@]}")       ;;
-#		"94"|"94as"*)   local -ar baseValArray=("${base94ascii[@]}")     ;;
-		"128j1w")       local -ar baseValArray=("${base128j1w[@]}")      ;;
-		"256j1")        local -ar baseValArray=("${base256j1[@]}")       ;;
-		"288j1")        local -ar baseValArray=("${base288j1[@]}")       ;;
+		"26")                    local -ar baseValArray=("${base26[@]}")          ;;
+		"32"|"32r"*)             local -ar baseValArray=("${base32r[@]}")         ;;
+		"32h"*)                  local -ar baseValArray=("${base32h[@]}")         ;;
+		"32c"*)                  local -ar baseValArray=("${base32c[@]}")         ;;
+		"32w"*)                  local -ar baseValArray=("${base32w[@]}")         ;;
+		"36")                    local -ar baseValArray=("${base36[@]}")          ;;
+		"38ho"*)                 local -ar baseValArray=("${base38hostname[@]}")  ;;
+		"39us"*)                 local -ar baseValArray=("${base39username[@]}")  ;;
+		"45em"*)                 local -ar baseValArray=("${base45email[@]}")     ;;
+		"48j1w"|"48jcws")        local -ar baseValArray=("${base48j1w[@]}")       ;;
+		"52")                    local -ar baseValArray=("${base52[@]}")          ;;
+		"62")                    local -ar baseValArray=("${base62[@]}")          ;;
+		"64"|"64r"*)             local -ar baseValArray=("${base64r[@]}")         ;;
+		"64u"*)                  local -ar baseValArray=("${base64u[@]}")         ;;
+		"64h"*)                  local -ar baseValArray=("${base64h[@]}")         ;;
+		"64j1"|"64jc"|"64j1u")   local -ar baseValArray=("${base64j1[@]}")        ;;
+		"64j1w"|"64jcws")        local -ar baseValArray=("${base64j1w[@]}")       ;;
+		"128j1w"|"128jcws")      local -ar baseValArray=("${base128j1w[@]}")      ;;
+		"128j1"|"128jc")         local -ar baseValArray=("${base128j1[@]}")       ;;
+		"256j1"|"256jc")         local -ar baseValArray=("${base256j1[@]}")       ;;
+		"288j1"|"288jc")         local -ar baseValArray=("${base288j1[@]}")       ;;
+		"48v1compat")            local -ar baseValArray=("${base48v1compat[@]}")  ;;
+		"64v1compat")            local -ar baseValArray=("${base64v1compat[@]}")  ;;
+		"128v1compat")           local -ar baseValArray=("${base128v1compat[@]}") ;;
 	esac
 
 	local -i index
@@ -427,17 +432,16 @@ fValidate(){
 	## Validate
 	[[ -z "${inputVal}" ]] && fThrowError "An input value must be specified."  "${FUNCNAME[0]}"
 	[[ -z "${outBase}" ]] && fThrowError "An output base must be specified."  "${FUNCNAME[0]}"
-#	[[ -z "$(echo "x ${outBase} x" | grep -iP "x (2|8|10|16|26|32([rhcw].*)?|36|38(us|ho).*|48j1?|52|62|64((r|u|j1u|j1uw).*)?|94(as.*)?|(128|256|288)(j1)?) x" || true)" ]] && fThrowError "Sorry, --obase of '${arg_outBase}' is not supported."  "${FUNCNAME[0]}"
-	[[ -z "$(echo "x ${outBase} x" | grep -iP "x (2|8|10|16|26|32([rhcw].*)?|36|38(us|ho).*|48j1?|52|62|64((r|u|j1u|j1uw).*)?|(128|256|288)(j1)?) x" || true)" ]] && fThrowError "Sorry, --obase of '${arg_outBase}' is not supported."  "${FUNCNAME[0]}"
+	[[ -z "$(echo "x ${outBase} x" | grep -iP "x (2|8|10|16|26|32(c|h|r|w)?.*|36|38ho.*|39us.*|45em.*|(48|64|128)(j1w|jcws)|52|62|64(h|r|u)?.*|64j1u|(64|128|256|288)(j1|jc)|(48|64|128)v1compat) x" || true)" ]] && fThrowError "Sorry, --obase of '${arg_outBase}' is not supported."  "${FUNCNAME[0]}"
 
 
 	## Validate; make sure input characters all exist in input base
 	local validBaseChars=""
 	case "${inBase}" in
-		"2")   validBaseChars="${b2[*]}"      ;;
-		"8")   validBaseChars="${b8[*]}"      ;;
-		"10")  validBaseChars="${b10[*]}"     ;;
-		"16")  validBaseChars="${b16[*]}"     ;;
+		"2")   validBaseChars="${base2[*]}"   ;;
+		"8")   validBaseChars="${base8[*]}"   ;;
+		"10")  validBaseChars="${base10[*]}"     ;;
+		"16")  validBaseChars="${base16[*]}"     ;;
 		"26")  validBaseChars="${base26[*]}"  ;;
 		"36")  validBaseChars="${base36[*]}"  ;;
 		*)     fThrowError "Sorry, --ibase of '${arg_inBase}' is not currently supported."  "${FUNCNAME[0]}" ;;
@@ -451,11 +455,12 @@ fValidate(){
 
 	## Validate lower case if desired and valid
 	## UDPATE: Don't error if invalid in context, as the cognitive load on the user is too high; just benevolently fix the flag and move on.
+	## It would be more robust to just scan or grep the contents for case. But for now this works.
 	if ((doLowerCase)); then
 		case "${outBase}" in
-		#	"32w"*|"52"|"62"|"64"*|"94"*|"128"*)        fThrowError "The switch '--lcase' is incompatible with mixed-case base of ${arg_outBase}."  "${FUNCNAME[0]}" ;;
-			"16"|"26"|"32"|"32r"*|"32h"*|"32c"*|"36")   : ;; ## The switch is valid.
-			*)                                          doLowerCase=0 ;;  ## There are no upper-case chars anyway, so just disable the switch and don't complain.
+		#	"32w"*|"48"*|"52"|"62"|"64"*|"128"*|"256"*|"288"*)        fThrowError "The switch '--lcase' is incompatible with mixed-case base of ${arg_outBase}."  "${FUNCNAME[0]}"  ;; ## The lower-case switch is NOT valid in this context.
+			"16"|"26"|"32"|"32r"*|"32h"*|"32c"*|"36")                 :                                                                                                             ;; ## The lower-case switch IS valid in this context.
+			*)                                                        doLowerCase=0                                                                                                 ;; ## There are no upper-case chars anyway, so just disable the switch and don't complain.
 		esac
 	fi
 
@@ -543,16 +548,18 @@ function _fMustBeInPath(){
 ##	Generic echo-related stuff. (Minified.)
 ##
 declare -i _wasLastEchoBlank=0
+declare -i _isEchoInRawInlineMode=0
+fEcho_ResetBlankCounter()     { _wasLastEchoBlank=0;      }
+fEcho_WasLastEchoBlank_Set()  { { [[ "${1}" == "1" ]]  &&  _wasLastEchoBlank=1; }  ||  _wasLastEchoBlank=0;  }
+fEcho_WasLastEchoBlank_Get()  { { ((_wasLastEchoBlank > 0))  &&  return 0; }  ||  return 1; }
+fEcho_IsInRawInlineMode_Set() { { [[ "${1}" == "1" ]]  &&  _isEchoInRawInlineMode=1; }  ||  _isEchoInRawInlineMode=1; }  ## Script it telling fEcho* that something is going to be echoing to the screen in non-linefeed mode without its knowledge. (E.g. "echo -n 'something: '".)
+fEcho_IsInRawInlineMode_Get() { { ((_isEchoInRawInlineMode))  &&  return 0; }  ||  return 1; }
 fEcho_Clean(){
-	if [[ -n "${1}" ]]                  ; then  echo -e "${1}" ; _wasLastEchoBlank=0
-	elif [[ $_wasLastEchoBlank -eq 0 ]] ; then  echo           ; _wasLastEchoBlank=1
-	fi; }
-# shellcheck disable=2120  ## References arguments, but none are ever passed; Just because this library function isn't called here, doesn't mean it never will in other scripts.
+	((_isEchoInRawInlineMode))  &&  { echo; _wasLastEchoBlank=0; _isEchoInRawInlineMode=0; }
+	if [[ -n "${1:-}" ]]; then echo -e "$*"; _wasLastEchoBlank=0; elif [[ $_wasLastEchoBlank -eq 0 ]]; then echo; _wasLastEchoBlank=1; fi; }
 fEcho()                   { if [[ -n "$*" ]]; then fEcho_Clean "[ $* ]"; else fEcho_Clean ""; fi; }
-fEcho_Force()             { fEcho_ResetBlankCounter; fEcho "$*";                                  }
-fEcho_Clean_Force()       { fEcho_ResetBlankCounter; fEcho_Clean "$*";                            }
-fEchoVarAndVal()          { fEcho_Clean "${2}${1} = '${!1}'";                                     }
-fEcho_ResetBlankCounter() { _wasLastEchoBlank=0;                                                  }
+fEcho_Force()             { fEcho_ResetBlankCounter; fEcho "$*";       }
+fEcho_Clean_Force()       { fEcho_ResetBlankCounter; fEcho_Clean "$*"; }
 
 
 ##
@@ -634,11 +641,7 @@ declare    meName="$(basename "${BASH_SOURCE[0]}")"
 fMain "${1}" "${2}" "${3}" "${4}" "${5}" "${6}" "${7}" "${8}" "${9}" "${10}" "${11}" "${12}" "${13}" "${14}" "${15}" "${16}" "${17}" "${18}" "${19}" "${20}" "${21}" "${22}" "${23}" "${24}" "${25}" "${26}" "${27}" "${28}" "${29}" "${30}" "${31}" "${32}"
 
 
-##
-## Examples
-##
-
-##	A big random base 10 number '2023090613425900000000000000001' in various bases:
+##	EXAMPLE: A big random base 10 number '2023090613425900000000000000001' in various bases:
 ##	                      Reduction
 ##	   Base         Chars  Inc Orig  Number
 ##		  2           101            11001100010001111010101010101001101101001000111010011010010010010001000110101111111100000000000000001
@@ -662,119 +665,8 @@ fMain "${1}" "${2}" "${3}" "${4}" "${5}" "${6}" "${7}" "${8}" "${9}" "${10}" "${
 ##		128j1w         15   6%       6🜥Mᛦ⍩ÑQŵʬμʞᚼä01
 ##		256j1          13  13%       Pĵㅍ‡sĨǍᚧYrぇ01
 ##		288j1          13   0        6zф⅖ẄÃЋゲㅎぇúkᛎ
-##
-##	Or comparing % only by powers of 2:
-##	                      Reduction
-##	   Base         Chars  Inc Orig  Number
-##		  2           101            11001100010001111010101010101001101101001000111010011010010010010001000110101111111100000000000000001
-##		  8            34  66%  66%  3142172525155107232222106577400001
-##		 16            26  24%  74%  1988F5553691D3492235FE0001
-##		 32[r]         21  19%  79%  BTCHVKU3JDU2JEI274AAB
-##		 64[r]         17  19%  83%  PYFLLDf7JII8r/W01
-##		128j1w        15  12%  85%  6🜥Mᛦ⍩ÑQŵʬμʞᚼä01
-##		256j1        13  13%  87%  Pĵㅍ‡sĨǍᚧYrぇ01
-##
-##	A date serial in the form YYYMMDDHHMMS (no millenium or one-second precision), "023090617142":
-##		  2            35  10101100000010011101101101100110110
-##		  8            12  254023555466
-##		 10            11  23090617142
-##		 16             9  5604EDB36
-##		 26             8  CWTLEJRI
-##		 32[r]          7  vqe5wzw
-##		 32h            7  lg4tmpm
-##		 32c            7  ng4xpsp
-##		 32w            7  fR6vgmg
-##		 36             7  alvk27q
-##		 48j1           7  1▿ᛝ🝅1f🜿
-##		 52             7  BImDpVi
-##		 62             6  PCfsKk
-##		 64(r|u|j1u)    6  LWJjis
-##		 64j1w         6  XwVᚧᚠ▿
-##		 94[ascii]      6  #-fK54
-##		128j1w         5  ⍋2⁑▿▿
-##		256j1         5  5Ϡ🜿Ǒs
-##		288j1         5  3ѢŔ9⅕
 
 
-##
-## Copyright, license, and history
-##
-
-##	Copyright
-##		Copyright © 2022-2026 Jim Collier (ID: 1cv◂‡Vᛦ)
-##		Licensed under the GNU General Public License v2.0 or later. Full text at:
-##			https://spdx.org/licenses/GPL-2.0-or-later.html
-##		SPDX-License-Identifier: GPL-2.0-or-later
-##			Preamble:
-##				This program is free software: you can redistribute it and/or modify
-##				it under the terms of the GNU General Public License as published by
-##				the Free Software Foundation, either version 2 of the License, or
-##				(at your option) any later version.
-##
-##				This program is distributed in the hope that it will be useful,
-##				but WITHOUT ANY WARRANTY; without even the implied warranty of
-##				MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##				GNU General Public License for more details.
-##
-##				You should have received a copy of the GNU General Public License
-##				along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
-##	Evaluation of Unicode characters, and what fits on fixed-widh output:
-##		OK
-##			Standard [safe] ...........: [none]
-##			Extended latin ............: ¢£¥§±µ¿÷Ʊɤʬ                     Too wide, ambiguous, or ugly: ©®¶·ºðƍẟɸɷʊʭ
-##				circumflex ............: ÂĈÊĜĤÎĴÔŜÛŴŶẐâĉêĝĥîĵôŝûŵŷẑ
-##				tilde .................: ÃẼĨÑÕŨỸãẽĩñõũỹ
-##				diaeresis .............: ÄËÏÖÜẄẌŸäëḧïöẗüẅẍÿ              Too wide, ambiguous, or ugly: Ḧ
-##				diaeresis and macron ..: ǟȫǖ
-##				acute .................: ÁĆÉǴÍĹŃÓŔŚÚẂÝŹáćéǵíḱĺńóŕśúẃýź   Too wide, ambiguous, or ugly: ḰḾḿ
-##				doulbe acute ..........: ŐőŰű
-##				macron ................: ĀĪĒŌŪȲāēḡīōūȳ                   Too wide, ambiguous, or ugly: Ḡ
-##				caron .................: ǍČĎĚǦȞǏǨĽŇǑŘŠŤǓǎčďěǧȟǐǩǰľňǒřšťǔ
-##				stroke ................: ȺɃȻĐɆĦƗɈľɌŦɎƀȼɇđħɨɉłɍŧɏ
-##				hook ..................: Ƒƒ
-##				middle tilde ..........: Ɵɫ
-##				bar ...................: ʉ
-##				In order desired usage.: ¢£¥§±µ¿÷ƱɤʬÂĈÊĜĤĴŜŴŶâĉêĝĥĵŝŵŷÃẼÑỸãẽñỹÄËẄẌŸäëẅẍÿÁĆÉǴŃŔẂÝáćéǵńŕẃýǍČĎĚǦȞǨŇŘŤǎčďěǧȟǩňřť
-##			Greek .....................: ΞφψΩϠδλμϟ                       Too wide, ambiguous, or ugly: ΔΘΛϕθϢϪπϡϣϫϖ
-##			Cyrillic ..................: ЋДЖЯѢѦѪѮджфяѣѧѫѯ҂ՃՊՖ
-##			    Useful ................: ЋЖЯѢф҂
-##			turned ....................: Ʌɐǝʞɹʇʌʎ
-##			inverted ..................: ¡¿ʁ
-##			Currency ..................: ¢ ¥ ₤ ₸
-##			Korean ....................: ㅈ ㅊ ㅍ ㅎ ㅠ ㅱ ㅸ ㅿ
-##			Japanese ..................: ソッゞぅぇォゲサじすスせちづでネビべぺまミもモゟヲ
-##			Technical .................: ⌲ ⍋ ⍒ ⍢ ⍤ ⍩
-##			Shapes ....................: ◂ ▸ ▵ ▿
-##			Misc ......................: ⁑ ⋆ ⍣ ʉ ʬ
-##			People ....................: 웃 유
-##			Math ......................: ≠ ≈ ‡ ± ∞ ∮
-## 			Fractions .................: ½ ⅓ ⅔ ¼ ¾ ⅕ ⅖ ⅗ ⅘ ⅙ ⅚ ⅛ ⅜ ⅝ ⅞
-## 			Fractions, small to big ...: ⅛ ⅙ ⅕ ¼ ⅓ ⅜ ⅖ ½ ⅗ ⅝ ⅔ ¾ ⅘ ⅚ ⅞
-##			Alchemy ...................: 🜌 🜣 🜥 🜿 🝅
-##			Runes .....................: ᚠ ᚤ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛝ ᛦ ᛨ ᛬ ᛯ
-##			All, sorted ...............: 웃유~±᛬‡⁑∞∮≈≠⋆⌲⍋⍒⍢⍣⍤⍩▵▸▿◂🜌🜣🜥🜿🝅¢¥₤₸½⅓¼⅕⅙⅛⅔⅖¾⅗⅜⅘⅚⅝⅞ʞʉʬλᚠᚤᚧᚬᚼᛎᛏᛘᛯᛝᛦᛨㅈㅊㅍㅎㅱㅸㅿㅠソッぺミゟ
-##			All v1, by desired usage ..: ʞ λ ± ‡ ⁑ ∞ ∮ ~ ≈ ≠ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ⍣ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ ¢ ¥ ₤ ₸ ᛬ 웃 유 ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ソ ッ ゞ ぅ ぇ ォ ゲ サ じ す ス せ ち づ で ネ ビ べ ぺ ま ミ も モ ゟ ヲ ½ ⅓ ⅔ ¼ ¾ ⅕ ⅖ ⅗ ⅘ ⅙ ⅚ ⅛ ⅜ ⅝ ⅞
-##			All v2, by desired usage (URL-safe, filesystem-safe, CLI-safe, programmer-friendly)
-##				Wordsafe ..............: 0 1 2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Ĵ Ŝ Ŵ Ŷ â ĉ ê ĝ ĥ ĵ ŝ ŵ ŷ Ã Ẽ Ñ Ỹ ã ẽ ñ ỹ Ä Ë Ẅ Ẍ Ÿ ä ë ẅ ẍ ÿ Á Ć É Ǵ Ń Ŕ Ẃ Ý á ć é ǵ ń ŕ ẃ ý Ǎ Č Ď Ě Ǧ Ȟ Ǩ Ň Ř Ť ǎ č ď ě ǧ ȟ ǩ ň ř ť ǝ ɹ ʇ ʌ ₸ ᛬ 웃 유 ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ソ ッ ゞ ぅ ぇ ォ ゲ サ じ す ス せ ち づ で ネ ビ べ ぺ ま モ ゟ ヲ
-##				Not wordsafe ..........: 0 1 2 3 4 5 6 7 8 9 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Î Ĵ Ô Ŝ Û Ŵ Ŷ Ẑ â ĉ ê ĝ ĥ î ĵ ô ŝ û ŵ ŷ ẑ Ã Ẽ Ĩ Ñ Õ Ũ Ỹ ã ẽ ĩ ñ õ ũ ỹ Ä Ë Ï Ö Ü Ẅ Ẍ Ÿ ä ë ï ö ü ẅ ẍ ÿ Á Ć É Ǵ Í Ń Ó Ŕ Ś Ú Ẃ Ý Ź á ć é ǵ í ń ó ŕ ś ú ẃ ý ź Ā Ē Ī Ō Ū Ȳ ā ē ī ō ū ȳ Ǎ Č Ď Ě Ǧ Ȟ Ǩ Ň Ǒ Ř Š Ǔ ǎ č ď ě ǧ ȟ ǩ ň ǒ ř š ǔ ǝ ɹ ʇ ʌ ₸ ᛬ 웃 유 ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ソ ッ ゞ ぅ ぇ ォ ゲ サ じ す ス せ ち づ で ネ ビ べ ぺ ま モ ゟ ヲ ½ ⅓ ⅔ ¼ ¾ ⅕ ⅖ ⅗ ⅘ ⅙ ⅚ ⅛ ⅜ ⅝ ⅞
-##			All v3 - v2 but machine-sorted by LC_ALL=C or LC_ALL=C.UTF-8; Note that not even standard bases sort property by this method, so this isn't really necessary.
-##				Wordsafe ..............: 웃 유 § ± ¿ ÷ ҂ ᛬ ‡ ⁑ ∞ ≈ ≠ ⌲ ⍋ ⍒ ⍢ ⍤ ⍩ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 ゞ ¢ £ ¥ ₸ 0 1 2 3 4 5 6 7 8 9 á Á â Â ǎ Ǎ ä Ä ã Ã c C ć Ć ĉ Ĉ č Č ď Ď é É ê Ê ě Ě ë Ë ẽ Ẽ ǝ ɤ f F g G ǵ Ǵ ĝ Ĝ ǧ Ǧ h H ĥ Ĥ ȟ Ȟ j J ĵ Ĵ ǩ Ǩ ʞ m M ń Ń ň Ň ñ Ñ p P q Q r R ŕ Ŕ ř Ř ɹ ŝ Ŝ ť Ť ʇ Ʊ v V ʌ w W ẃ Ẃ ŵ Ŵ ẅ Ẅ x X ẍ Ẍ ý Ý ŷ Ŷ ÿ Ÿ ỹ Ỹ ʬ δ λ μ Ξ ϟ ψ Ω Ϡ Ж Ћ ф Ѣ Я ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ぅ ぇ ォ ゲ サ じ す ス せ ソ ち ッ づ で ネ ビ べ ぺ ま モ ゟ ヲ
-##				Not wordsafe ..........: 웃 유 § ± ¿ ÷ ҂ ᛬ ‡ ⁑ ∞ ≈ ≠ ⌲ ⍋ ⍒ ⍢ ⍤ ⍩ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 ゞ ¢ £ ¥ ₸ 0 1 ½ ⅓ ¼ ⅕ ⅙ ⅛ 2 ⅔ ⅖ 3 ¾ ⅗ ⅜ 4 ⅘ 5 ⅚ ⅝ 6 7 ⅞ 8 9 a A á Á â Â ǎ Ǎ ä Ä ã Ã ā Ā b B c C ć Ć ĉ Ĉ č Č d D ď Ď e E é É ê Ê ě Ě ë Ë ẽ Ẽ ē Ē ǝ ɤ f F g G ǵ Ǵ ĝ Ĝ ǧ Ǧ h H ĥ Ĥ ȟ Ȟ i I í Í î Î ï Ï ĩ Ĩ ī Ī j J ĵ Ĵ k K ǩ Ǩ ʞ l L m M n N ń Ń ň Ň ñ Ñ o O ó Ó ô Ô ǒ Ǒ ö Ö õ Õ ō Ō p P q Q r R ŕ Ŕ ř Ř ɹ s S ś Ś ŝ Ŝ š Š t T ʇ u U ú Ú û Û ǔ Ǔ ü Ü ũ Ũ ū Ū Ʊ v V ʌ w W ẃ Ẃ ŵ Ŵ ẅ Ẅ x X ẍ Ẍ y Y ý Ý ŷ Ŷ ÿ Ÿ ỹ Ỹ ȳ Ȳ z Z ź Ź ẑ Ẑ ʬ δ λ μ Ξ ϟ ψ Ω Ϡ Ж Ћ ф Ѣ Я ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ぅ ぇ ォ ゲ サ じ す ス せ ソ ち ッ づ で ネ ビ べ ぺ ま モ ゟ ヲ
-##				48j1 .................: ± ҂ ‡ ⁑ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 0 1 2 3 4 5 6 7 8 9 c f g h j ʞ m p q r v w x λ μ ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ
-##				64j1u ................: 0 1 2 3 4 5 6 7 8 9 a A b B c C d D e E f F g G h H i I j J k K ʞ l L m M n N o O p P q Q r R s S t T u U v V w W x X y Y z Z λ
-##				64j1w ...............: ± ÷ ҂ ‡ ⁑ ∞ ≈ ≠ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 0 1 2 3 4 5 6 7 8 9 c C f F g G h H j J ʞ m M p P q Q r R v V w W x X λ μ ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ
-##				128j1 ................: § ± ¿ ÷ ҂ ‡ ⁑ ∞ ≈ ≠ ⌲ ⍋ ⍒ ⍢ ⍤ ⍩ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 ¢ £ ¥ 0 1 2 3 4 5 6 7 8 9 Á â Â ä Ä ã Ã c C Ć ĉ Ĉ É ê Ê ë Ë ẽ Ẽ ɤ f F g G ĝ Ĝ h H ĥ Ĥ j J ĵ Ĵ ʞ m M ñ Ñ p P q Q r R ŝ Ŝ Ʊ v V w W ŵ Ŵ ẅ Ẅ x X ẍ Ẍ ŷ Ŷ ÿ Ÿ ỹ Ỹ ʬ δ λ μ Ξ ϟ ψ Ω Ϡ Ж Ћ ф Ѣ Я ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ
-##				256j1 ................: 웃 유 § ± ¿ ÷ ҂ ᛬ ‡ ⁑ ∞ ≈ ≠ ⌲ ⍋ ⍒ ⍢ ⍤ ⍩ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 ゞ ¢ £ ¥ ₸ 0 1 2 3 4 5 6 7 8 9 a A á Á â Â ǎ Ǎ ä Ä ã Ã ā Ā b B c C ć Ć ĉ Ĉ č Č d D ď Ď e E é É ê Ê ě Ě ë Ë ẽ Ẽ ē Ē ǝ ɤ f F g G ǵ Ǵ ĝ Ĝ ǧ Ǧ h H ĥ Ĥ ȟ Ȟ i I í Í î Î ï Ï ĩ Ĩ ī Ī j J ĵ Ĵ k K ǩ Ǩ ʞ l L m M n N ń Ń ň Ň ñ Ñ o O ó Ó ô Ô ǒ Ǒ ö Ö õ Õ ō Ō p P q Q r R ŕ Ŕ ř Ř ɹ s S ś Ś ŝ Ŝ š Š t T ʇ u U ú Ú û Û ǔ Ǔ ü Ü ũ Ũ ū Ū Ʊ v V ʌ w W ẃ Ẃ ŵ Ŵ ẅ Ẅ x X ẍ Ẍ y Y ý Ý ŷ Ŷ ÿ Ÿ ỹ Ỹ ȳ Ȳ z Z ź Ź ẑ Ẑ ʬ δ λ μ Ξ ϟ ψ Ω Ϡ Ж Ћ ф Ѣ Я ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ぅ ぇ ォ ソ ッ
-##		Not OK
-##			Standard
-##				Bad for filesystems ...:   "             *         / :   <   > ?     \           |
-##				Bad for internet ......:     $   &         + ,     / : ;   =   ? @
-##				Bad for programmers ...: ! " $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
-## 			Fractions
-##				Don't fit .............: ↉ ⅐ ⅑ ⅒
-##			Misc don't fit [sorted] ...: 🯅⌁★☜☝☞☟☢☣☤☮☯☻♚♛♞♠♣♥♦♫⚓⚖⛁⛈ⒸⒹⒻⒼⒽⒿⓀⓂⓃⓅⓆⓇⓉⓋⓌⓍⓎⓒⓓⓕⓖⓗⓙⓚⓜⓝⓟⓠⓡⓣⓥⓦⓧⓨϠѰ
 
 
 ##	History:
@@ -786,3 +678,6 @@ fMain "${1}" "${2}" "${3}" "${4}" "${5}" "${6}" "${7}" "${8}" "${9}" "${10}" "${
 ##			- Removed a large amount of unused boilerplate, debugging, and profiling code that has been in here from day one.
 ##			- Allow switches to only have a single leading-dash, without complaining about invalid args.
 ##			- Remove some unnecessary code paths, such as arg-parser building a flat string of args.
+##		- 20260423 JC: Breaking changes with v1 necessitated v1b. (v2 is already underway and even more different.)
+##			- Redefined custom "word-safe" bases to be consistent with the published "32w" from Google, rather than halfway-consistent.
+##			- Can no longer refer to bases by number alone, that aren't well-defined standards (e.g. 128).
