@@ -19,54 +19,29 @@
 ##		Licensed under the GNU General Public License v2.0 or later. Full text at:
 ##			https://spdx.org/licenses/GPL-2.0-or-later.html
 ##		SPDX-License-Identifier: GPL-2.0-or-later
-##	History .................: At bottom of this file.
+##	History .................: At bottom of this file. (Note: History for this maintained outside of [or in addition to] git project.)
 
 
 ## Settings
-declare -r exePath="$(dirname "${0}")/../convert-base-v1"
+declare -r exePath="$(realpath -e "$(dirname "${0}")/../convert-base-v1")"
 
 
 fUnitTest(){
 	local inputVal=""  expectVal=""  gotVal=""  tmpVal=""
 
-	"${exePath}" --version
+	fEcho_Clean; fEcho_Clean "${exePath}"
+	"${exePath}" --version ; fEcho_WasLastEchoBlank_Set 1 ; sleep 2
 
 	## Expect equal - base-65536 with big number [known bug]
 	inputVal="00012345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
 	expectVal="12345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
-#	fRunLinkedTests  '=='  "'${exePath}'  --ibase 10  ${inputVal}  base16 ; '${exePath}'  --ibase 16  %CMD1_OUTPUT%  base10"
-	fRunLinkedTests  "'${exePath}'  --ibase 10  '${inputVal}'  base16 ; fRunTest  ==  \"'${expectVal}'  '${exePath}'  --ibase 16  '%CMD1_OUTPUT%'  base10\""
+	fRunChained_TestLast  '=='  "'${exePath}'  --ibase 10  ${inputVal}  base16 ; '${exePath}'  --ibase 16  %CMD1_OUTPUT%  base10"
 
-
-exit
+	inputVal="00012345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
+	expectVal="ẽ🝅q¥fᚧ▵jj⍩Ξ4⍩ŷᚠMϠÿ≈⍤prẌŶãʞ1HÃ⍋ϟ‡mpcδñjĥWHᚼh▿ĉp⍢ỹʬ1QfẅF1VpλμɤЖG2ĵ5Ϡ⍋Éw≠Éẍ🝅ᛘẅμ"
+	fRunTest  '=='  "'${exePath}'  ${inputVal}  128j1w"
 
 :;}
-
-
-fRunLinkedTests(){
-#	local -r  testMode="${1:-}"   ; shift || true   ## 'equal', 'notequal', 'error'.
-	local -r  cmdStrs="${1:-}"    ; shift || true
-	local -a  cmdArr=()
-	local -a  cmdOutputs=()
-	local     nextCmd=""
-	local     namedcmdOutputs=""
-	IFS=';' read -ra cmdArr <<< "${cmdStrs}"
-	for ((i=0; i<${#cmdArr[@]}; i++)); do  ## Remember, '%CMDn_OUTPUT%' starts at 1.
-		nextCmd="${cmdArr[i]}"
-		nextCmd="${nextCmd#"${nextCmd%%[![:space:]]*}"}"
-		nextCmd="${nextCmd%"${nextCmd##*[![:space:]]}"}"
-	#	echo "nextCmd ...............: ${nextCmd}"
-		((i > 0))  &&  nextCmd="${nextCmd//"%CMD${i}_OUTPUT%"/"${cmdOutputs[i-1]:-}"}"  ## '%CMDn_OUTPUT%' is 1-based, array is 0-based.
-	#	echo "i .....................: ${i}"
-	#	echo "%CMD\${i}_OUTPUT% ....: %CMD${i}_OUTPUT%"
-	#	echo "nextCmd ...............: ${nextCmd}"
-	#	echo "cmdOutputs[i-0]........: ${cmdOutputs[i-0]:-}"
-		cmdOutputs[i]="$(eval "${nextCmd}")"
-	#	echo "cmdOutputs[i] .........: ${cmdOutputs[i]:-}"
-	#	echo
-	done
-
-}
 
 
 #•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
@@ -92,7 +67,7 @@ fMain(){
 declare -i currentPassStreak=0
 fRunTest(){
 	local -r  testMode="${1:-}"   ; shift || true   ## 'equal', 'notequal', 'error'.
-	local -r  expectVal="${1:-}"  ; shift || true   ## Inherit from parent instead.
+#	local -r  expectVal="${1:-}"  ; shift || true   ## Inherit from parent instead.
 	local -r  cmdStr="${1:-}"     ; shift || true
 
 	local -i  errNum=0
@@ -154,6 +129,36 @@ fRunTest(){
 
 :;}
 
+fRunChained_TestLast(){
+	## Args
+	local -r  testMode="${1:-}"   ; shift || true   ## 'equal', 'notequal', 'error'.
+	local -r  cmdStrs="${1:-}"    ; shift || true   ## >=1 commands with ';' as delimiter.
+	## Variables
+	local -a  cmdArr=()
+	local -a  cmdOutputs=()
+	local     nextCmd=""
+	local     namedcmdOutputs=""
+	local -i  lastNonEmptyIdx=0
+	## Parse commands into array
+	IFS=';' read -ra cmdArr <<< "${cmdStrs}"
+	## Find highest non-empty value
+	for ((i=0; i<${#cmdArr[@]}; i++)); do [[ -n "${cmdArr[i]//[[:space:]]/}" ]]  &&  lastNonEmptyIdx=i; done
+	## Loop to highest non-empty
+	for ((i = 0; i <= lastNonEmptyIdx; i++)); do
+		nextCmd="${cmdArr[i]}"
+		nextCmd="${nextCmd#"${nextCmd%%[![:space:]]*}"}"
+		nextCmd="${nextCmd%"${nextCmd##*[![:space:]]}"}"
+		((i > 0))  &&  nextCmd="${nextCmd//"%CMD${i}_OUTPUT%"/"${cmdOutputs[i-1]:-}"}"  ## '%CMDn_OUTPUT%' is 1-based, array is 0-based.
+		if ((i == lastNonEmptyIdx)); then
+			## It's the last one so test it
+			fRunTest  "${testMode}"  "${nextCmd}"
+		else
+			## Run normally
+			cmdOutputs[i]="$(eval "${nextCmd}")"
+		fi
+	done
+:;}
+
 fTallyResult(){
 	local -ri errNum=${1:-0}      ; shift || true  ## The integer return value from the command.
 	local -r  testMode="${1:-}"   ; shift || true  ## 'equal', 'notequal', 'error'.
@@ -171,7 +176,9 @@ fTallyResult(){
 declare -i _wasLastEchoBlank=0
 declare -i _isEchoInRawInlineMode=0
 fEcho_ResetBlankCounter()     { _wasLastEchoBlank=0;      }
-fEcho_IsInRawInlineMode_Set() { [[ "${1}" == "1" ]]  &&  _isEchoInRawInlineMode=1; }  ## Script it telling fEcho* that something is going to be echoing to the screen in non-linefeed mode without its knowledge. (E.g. "echo -n 'something: '".)
+fEcho_WasLastEchoBlank_Set()  { { [[ "${1}" == "1" ]]  &&  _wasLastEchoBlank=1; }  ||  _wasLastEchoBlank=0;  }
+fEcho_WasLastEchoBlank_Get()  { { ((_wasLastEchoBlank > 0))  &&  return 0; }  ||  return 1; }
+fEcho_IsInRawInlineMode_Set() { { [[ "${1}" == "1" ]]  &&  _isEchoInRawInlineMode=1; }  ||  _isEchoInRawInlineMode=1; }  ## Script it telling fEcho* that something is going to be echoing to the screen in non-linefeed mode without its knowledge. (E.g. "echo -n 'something: '".)
 fEcho_IsInRawInlineMode_Get() { { ((_isEchoInRawInlineMode))  &&  return 0; }  ||  return 1; }
 fEcho_Clean(){
 	((_isEchoInRawInlineMode))  &&  { echo; _wasLastEchoBlank=0; _isEchoInRawInlineMode=0; }
@@ -205,3 +212,4 @@ fMain
 ##	Script history:
 ##		- 20260420 JC: Copied for convert-base-v2.
 ##		- 20260421 JC: Added polish.
+##		- 20260423 JC: Added fRunChained_TestLast() to be able to test commands that can't be piped.
