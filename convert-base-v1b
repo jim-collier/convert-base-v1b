@@ -29,7 +29,7 @@
 declare -i    doDebug=0
 declare -i    runAsSudo=0
 declare -i    doQuietly=0; [[ "${X9CONVERTBASE1_QUIET}" == "1" ]] && doQuietly=1
-declare       thisVersion="v1.0.0-beta1"
+declare       thisVersion="v1.0.0-beta2"
 declare       copyrightYear="2023-2026"
 declare       author="Jim Collier (ID: 1cv◂‡Vᛦ)"
 

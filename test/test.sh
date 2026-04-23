@@ -51,6 +51,11 @@ fUnitTest(){
 	expectVal="⍩pT🜿NjqQQ҂ᛏ4҂¥iFᛯÔʞ◂SUĈδ⍤Y1D§±ᛦvRSMᛝ⌲QѢKDlPsЋS÷⍋▿1HNÎB1JSZa▸ᚠC2ф5ᛯ±ŴWλŴĴpdÎa"
 	fRunTest  '=='  "'${exePath}'  ${inputVal}  128j1"
 
+	## Random
+	local -l runCount=500
+	for ((i=0; i<runCount; i++)); do
+		
+	done
 
 :;}
 
