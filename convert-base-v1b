@@ -19,22 +19,23 @@
 ##		- See bottom of file for examples of numbers in various bases, and the space-saving percentages.
 ##	Copyright and license .........: Toward bottom of this file.
 ##	History .......................: At bottom of this file.
-##	Evaluation of Unicode chars ...: Near bottom of this file.
 
 
 ## Boilerplate constants (but don't actually make read-only because of errors during script-managed recursion).
 declare -i    doDebug=0
 declare -i    runAsSudo=0
 declare -i    doQuietly=0; [[ "${X9CONVERTBASE1_QUIET}" == "1" ]] && doQuietly=1
-declare       thisVersion="1.1.0"
+declare       thisVersion="v1.0.0-beta1"
 declare       copyrightYear="2023-2026"
-declare       author="Jim Collier"
+declare       author="Jim Collier (ID: 1cv◂‡Vᛦ)"
 
 
 fPrint_About(){
 	((doQuietly))  &&  return
 	fEcho_Clean ""
-	fEcho_Clean "Converts from some bases to a wide variety of others."
+	fEcho_Clean "Converts from some bases to a wide variety of others. Strictly positional"
+	fEcho_Clean "notation conversion, not for binary-to-text encoding/decoding. (Though you"
+	fEcho_Clean "can use the same common 2^N encoding bases as positional notation.)"
 	fEcho_Clean ""
 }
 
@@ -59,53 +60,52 @@ fPrint_Syntax(){
 	fEcho_Clean "        8 ....: aka Octal .................. 0-7"
 	fEcho_Clean "       10 ....: aka Decimal [default] ...... 0-9"
 	fEcho_Clean "       16 ....: aka Hexedecimal ............ 0-9, A-F"
-	fEcho_Clean "       32[r]..: RFC 4648 ................... A-Z, 2-7" #.......................... https://en.wikipedia.org/wiki/Base32
-	fEcho_Clean "       32h ...: RFC 4648 §7, 'Base32Hex' ... 0-9, A-V" #.......................... https://datatracker.ietf.org/doc/html/rfc4648#section-7
+	fEcho_Clean "       32[h] .: RFC 4648 §7, 'Base32Hex' ... 0-9, A-V" #.......................... https://datatracker.ietf.org/doc/html/rfc4648#section-7
+	fEcho_Clean "       32r ...: RFC 4648 §6 ................ A-Z, 2-7" #.......................... https://en.wikipedia.org/wiki/Base32
 	fEcho_Clean "       32w ...: Wordsafe Base32 ............ 2-9, CFGHJMPQRVWX, cfghjmpqrvwx" #... https://en.wikipedia.org/wiki/Base32#Word-safe_alphabet
 	fEcho_Clean "       36 ....: Just alphanum .............. 0-9, A-Z" #.......................... https://en.wikipedia.org/wiki/Base36
 	fEcho_Clean "       62 ....: All alphanum ............... 0-9, A-Z, a-z" #..................... https://en.wikipedia.org/wiki/Base62
-	fEcho_Clean "       64[h] .: Hex like, URL-safe ......... 0-9, A-Z, a-z, -, _" #............... https://en.wikipedia.org/wiki/Base64#Variants_summary_table
-	fEcho_Clean "       64r....: RFC 4648 ................... A-Z, a-z, 0-9, +, /" #............... https://en.wikipedia.org/wiki/Base64
-	fEcho_Clean "       64u ...: RFC 4648 §5; URL-safe ...... A-Z, a-z, 0-9, -, _" #............... https://en.wikipedia.org/wiki/Base64#Variants_summary_table
+	fEcho_Clean "       64r....: RFC 4648 §4 ................ A-Z, a-z, 0-9, +, /" #............... https://en.wikipedia.org/wiki/Base64
+	fEcho_Clean "       64u ...: RFC 4648 §5, URL-safe ...... A-Z, a-z, 0-9, -, _" #............... https://en.wikipedia.org/wiki/Base64#Variants_summary_table
 	fEcho_Clean "    De-facto standards:"
 	fEcho_Clean "       26 ....: One-case alphabetic ........ A-Z"
 	fEcho_Clean "       32c ...: Crockford's Base32 ......... 0-9, A-Z no I, L, O, U" #............ https://en.wikipedia.org/wiki/Base32#Crockford's_Base32
 	fEcho_Clean "       52 ....: Both-case alphabetic ....... A-Z, a-z"
 	fEcho_Clean "    Very slightly custom:"
-	fEcho_Clean "       64j1u..: Alternate to 64u but also programmer-friendly"
+	fEcho_Clean "       64[h] .: Hex like, URL-safe ......... 0-9, A-Z, a-z, -, _" #............... https://en.wikipedia.org/wiki/Base64#Variants_summary_table
 	fEcho_Clean "    Custom word-safe, URL-safe, filesystem-safe, programmer-friendly:"
-	fEcho_Clean "       48j1w..: Base 32w + unicode symbols"
-	fEcho_Clean "       64j1w..: Base 48j1w + more unicode symbols"
-	fEcho_Clean "      128j1w..: Base 64j1w + more unicode symbols"
+	fEcho_Clean "       48j1w .: Base 32w + unicode symbols"
+	fEcho_Clean "       64j1w .: Base 48j1w + more unicode symbols"
+	fEcho_Clean "      128j1w .: Base 64j1w + more unicode symbols"
 	fEcho_Clean "    Custom [not word-safe], URL-safe, filesystem-safe, programmer-friendly:"
+	fEcho_Clean "       64j1 ..: Like 64h but programmer-friendly +2 chars"
 	fEcho_Clean "      128j1 ..: Base 62 + unicode symbols"
 	fEcho_Clean "      256j1 ..: Base 128j1 + more unicode symbols"
 	fEcho_Clean "      288j1 ..: Base 256j1 + more unicode symbols"
-	fEcho_Clean "    Special-purpose bases [not very useful for output-only bases]:"
+	fEcho_Clean "    Special-purpose bases:"
 	fEcho_Clean "      38hostname: Valid *nix host and domain name characters"
 	fEcho_Clean "      39username: Valid *nix username characters"
-	fEcho_Clean "      45email:    Valid email characters"
+	fEcho_Clean "      45email:    Valid HTML5 <email> address characters"
 	fEcho_Clean "  Valid values for --ibase:"
 	fEcho_Clean "    2, 8, 10, 16, 36"  ## Note: You might think that base32/base64 might work, but those must be values at 32 or 64-bit boundaries. Maybe they could be padded in a future update?
-	fEcho_Clean "Notes:"
-	fEcho_Clean "  ▸ Base 32 and 64 are often used for streaming binary-to-text encoding/de-"
-	fEcho_Clean "    coding, but there's no reason you can't use them for positional notation."
-	fEcho_Clean "  ▸ All bases are human-readable/comparable. But not even RFC standard bases >36"
-	fEcho_Clean "    will machine-sort properly with common sort regimes, eg LC_COLLATE=C.UTF-8."
+#	fEcho_Clean "Notes:"
+#	fEcho_Clean "  ▸ Base 32 and 64 are often used for streaming binary-to-text encoding/de-"
+#	fEcho_Clean "    coding, but there's no reason you can't use them for positional notation."
+#	fEcho_Clean "  ▸ All bases are human-readable/comparable. But not even RFC standard bases >36"
+#	fEcho_Clean "    will machine-sort properly with common sort regimes, eg LC_COLLATE=C.UTF-8."
 	#           X"-------------------------------------------------------------------------------"X
 }
 
 fPrint_Copyright(){
 	((doQuietly))  &&  return
 	fEcho_Clean ""
-	fEcho_Clean "${meName} version ${thisVersion}"
-	fEcho_Clean "Copyright (c) ${copyrightYear} ${author}."
-	fEcho_Clean "License GPLv3+: GNU GPL version 3 or later, full text at:"
-	fEcho_Clean "    https://www.gnu.org/licenses/gpl-3.0.en.html"
+	fEcho_Clean "${meName} v${thisVersion} build ${thisBuild},"
+	fEcho_Clean "Copyright © ${thisCopyrightYear} ${thisAuthor}."
+	fEcho_Clean "Licensed under the GNU General Public License v2.0 or later. Full text at:"
+	fEcho_Clean "  https://spdx.org/licenses/GPL-2.0-or-later.html"
 	fEcho_Clean "There is no warranty, to the extent permitted by law."
 	fEcho_Clean ""
 }
-
 
 fMain(){
 
@@ -121,26 +121,26 @@ fMain(){
 	local -a allArgs=()
 
 	## Standardized bases
-	local -ar b2=($(echo {0..1}))
-	local -ar b8=($(echo {0..7}))
-	local -ar b10=($(echo {0..9}))
-	local -ar b16=($(echo {0..9} {A..F}))
-	local -ar base32r=($(echo {A..Z} {2..9})) #.............................................. RFC 4648
+	local -ar base2=($(echo {0..1}))
+	local -ar base8=($(echo {0..7}))
+	local -ar base10=($(echo {0..9}))
+	local -ar base16=($(echo {0..9} {A..F}))
 	local -ar base32h=($(echo {0..9} {A..V})) #.............................................. RFC 4648 hex
+	local -ar base32r=($(echo {A..Z} {2..9})) #.............................................. RFC 4648
 	local -ar base32w=(2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x) #.... Wordsafe
-	local -ar base36=($(echo {0..9} {A..Z})) #............................................... Base36
-	local -ar base62=($(echo {0..9} {A..Z} {a..z})) #........................................ Base62
 	local -ar base64r=($(echo {A..Z} {a..z} {0..9} "+ /")) #................................. RFC 4648
-	local -ar base64u=($(echo {A..Z} {a..z} {0..9} "- _")) #.................................. RFC 4648 url-safe variant
+	local -ar base64u=($(echo {A..Z} {a..z} {0..9} "- _")) #................................. RFC 4648 url-safe variant
 
 	## De-facto standards
 	local -ar base26=($(echo {A..Z}))
 	local -ar base32c=(0 1 2 3 4 5 6 7 8 9 A B C D E F G H J K M N P Q R S T V W X Y Z) #.... Crockford; no I, L, O, U; one famous programmer's proposal that has become a more-or-less de-facto accepted standard variant.
+	local -ar base36=($(echo {0..9} {A..Z})) #............................................... Base36
 	local -ar base52=($(echo {A..Z} {a..z}))
-	local -ar base64h=($(echo {0..9} {A..Z} {a..z} "- _")) #.................................. RFC 4648 url-safe variant
+	local -ar base62=($(echo {0..9} {A..Z} {a..z})) #........................................ Base62
 
 	## Very slight custom modifications
-	local -ar base64j1=($(echo {0..9} {A..Z} {a..z} "ʞ λ")) #............................... Custom programmer-safe unicode symbol variant
+	local -ar base64h=($(echo {0..9} {A..Z} {a..z} "- _")) #................................. Hex-style base 64
+	local -ar base64j1=($(echo {0..9} {A..Z} {a..z} "ʞ λ")) #................................ Like 64h but more programmer (and visually) friendly +2 chars at the end. 1% more bytes that 64r|u on average for UTF-8 encoding, if evenly-distributed.
 
 #	## Deprecated: Custom 'word-safe', URL-safe, filesystem-safe, and programmer-friendly variants that strive to be CLI-width-friendly (but may not always render properly in every terminal or program with every font).
 #	local -ra base48j1w=(0 1 2 3 4 5 6 7 8 9 c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑)
@@ -148,6 +148,7 @@ fMain(){
 #	local -ra base128j1w=(0 1 2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Ĵ Ŝ Ŵ Ŷ â ĉ ê ĝ ĥ ĵ ŝ ŵ ŷ Ã Ẽ Ñ Ỹ ã ẽ ñ ỹ Ä Ë Ẅ Ẍ Ÿ ä ë ẅ ẍ ÿ Á Ć É)
 
 	## Custom 'word-safe', URL-safe, filesystem-safe, and programmer-friendly variants that strive to be CLI-width-friendly (but may not always render properly in every terminal or program with every font).
+	## Note: Redefining these constitutes a breaking change.
 	local -ra base48j1w=(2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥)
 	local -ra base64j1w=(2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ)
 	local -ra base128j1w=(2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Î Ĵ Ô Ŝ Û Ŵ Ŷ Ẑ â ĉ ê ĝ ĥ î ĵ ô ŝ û ŵ ŷ ẑ Ã Ẽ Ĩ Ñ Õ Ũ Ỹ ã ẽ ĩ ñ õ ũ ỹ Ä)
@@ -189,17 +190,17 @@ fMain(){
 	fValidate
 
 	## Lock variables down that we can
-	local -ra allArgs=("${allArgs[@]}")
-	local -r arg_inputVal="${arg_inputVal}"
-	local -r arg_inBase="${arg_inBase}"
-	local -r arg_outBase="${arg_outBase}"
-	local -r  inputVal="${inputVal}"
-#	local -r  inBase="${inBase}"  ## Can't lock this yet
-	local -r  outBase="${outBase}"
-	local -ri doLowerCase=$doLowerCase
-	local -ri doUseClipIn=$doUseClipIn
-	local -ri doUseClipOut=$doUseClipOut
-	local -ri doSilent=$doSilent
+	readonly allArgs
+	readonly arg_inputVal
+	readonly arg_inBase
+	readonly arg_outBase
+	readonly inputVal
+#	readonly inBase   ## Can't lock this yet
+	readonly outBase
+	readonly doLowerCase
+	readonly doUseClipIn
+	readonly doUseClipOut
+	readonly doSilent
 
 	#DEBUG
 	#echo "\${allArgs[*]} = ${allArgs[*]}"
@@ -236,7 +237,7 @@ fMain(){
 			## Already base10
 			inputVal_base10=${inputVal}
 	esac
-	local -r inBase="${inBase}"
+	readonly inBase
 
 	## Set obase for bc (for OUTput base); just an integer.
 	bcObase=$(echo "${outBase}" | grep -iPo "[0-9]+" | head -n 1)
@@ -441,10 +442,10 @@ fValidate(){
 	## Validate; make sure input characters all exist in input base
 	local validBaseChars=""
 	case "${inBase}" in
-		"2")   validBaseChars="${b2[*]}"      ;;
-		"8")   validBaseChars="${b8[*]}"      ;;
-		"10")  validBaseChars="${b10[*]}"     ;;
-		"16")  validBaseChars="${b16[*]}"     ;;
+		"2")   validBaseChars="${base2[*]}"   ;;
+		"8")   validBaseChars="${base8[*]}"   ;;
+		"10")  validBaseChars="${base10[*]}"     ;;
+		"16")  validBaseChars="${base16[*]}"     ;;
 		"26")  validBaseChars="${base26[*]}"  ;;
 		"36")  validBaseChars="${base36[*]}"  ;;
 		*)     fThrowError "Sorry, --ibase of '${arg_inBase}' is not currently supported."  "${FUNCNAME[0]}" ;;
@@ -703,85 +704,10 @@ fMain "${1}" "${2}" "${3}" "${4}" "${5}" "${6}" "${7}" "${8}" "${9}" "${10}" "${
 ##		288j1         5  3ѢŔ9⅕
 
 
-##
-## Copyright, license, and history
-##
-
-##	Copyright
-##		Copyright © 2022-2026 Jim Collier (ID: 1cv◂‡Vᛦ)
-##		Licensed under the GNU General Public License v2.0 or later. Full text at:
-##			https://spdx.org/licenses/GPL-2.0-or-later.html
-##		SPDX-License-Identifier: GPL-2.0-or-later
-##			Preamble:
-##				This program is free software: you can redistribute it and/or modify
-##				it under the terms of the GNU General Public License as published by
-##				the Free Software Foundation, either version 2 of the License, or
-##				(at your option) any later version.
-##
-##				This program is distributed in the hope that it will be useful,
-##				but WITHOUT ANY WARRANTY; without even the implied warranty of
-##				MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##				GNU General Public License for more details.
-##
-##				You should have received a copy of the GNU General Public License
-##				along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
-##	Evaluation of Unicode characters, and what fits on fixed-widh output:
-##		OK
-##			Standard [safe] ...........: [none]
-##			Extended latin ............: ¢£¥§±µ¿÷Ʊɤʬ                     Too wide, ambiguous, or ugly: ©®¶·ºðƍẟɸɷʊʭ
-##				circumflex ............: ÂĈÊĜĤÎĴÔŜÛŴŶẐâĉêĝĥîĵôŝûŵŷẑ
-##				tilde .................: ÃẼĨÑÕŨỸãẽĩñõũỹ
-##				diaeresis .............: ÄËÏÖÜẄẌŸäëḧïöẗüẅẍÿ              Too wide, ambiguous, or ugly: Ḧ
-##				diaeresis and macron ..: ǟȫǖ
-##				acute .................: ÁĆÉǴÍĹŃÓŔŚÚẂÝŹáćéǵíḱĺńóŕśúẃýź   Too wide, ambiguous, or ugly: ḰḾḿ
-##				doulbe acute ..........: ŐőŰű
-##				macron ................: ĀĪĒŌŪȲāēḡīōūȳ                   Too wide, ambiguous, or ugly: Ḡ
-##				caron .................: ǍČĎĚǦȞǏǨĽŇǑŘŠŤǓǎčďěǧȟǐǩǰľňǒřšťǔ
-##				stroke ................: ȺɃȻĐɆĦƗɈľɌŦɎƀȼɇđħɨɉłɍŧɏ
-##				hook ..................: Ƒƒ
-##				middle tilde ..........: Ɵɫ
-##				bar ...................: ʉ
-##				In order desired usage.: ¢£¥§±µ¿÷ƱɤʬÂĈÊĜĤĴŜŴŶâĉêĝĥĵŝŵŷÃẼÑỸãẽñỹÄËẄẌŸäëẅẍÿÁĆÉǴŃŔẂÝáćéǵńŕẃýǍČĎĚǦȞǨŇŘŤǎčďěǧȟǩňřť
-##			Greek .....................: ΞφψΩϠδλμϟ                       Too wide, ambiguous, or ugly: ΔΘΛϕθϢϪπϡϣϫϖ
-##			Cyrillic ..................: ЋДЖЯѢѦѪѮджфяѣѧѫѯ҂ՃՊՖ
-##			    Useful ................: ЋЖЯѢф҂
-##			turned ....................: Ʌɐǝʞɹʇʌʎ
-##			inverted ..................: ¡¿ʁ
-##			Currency ..................: ¢ ¥ ₤ ₸
-##			Korean ....................: ㅈ ㅊ ㅍ ㅎ ㅠ ㅱ ㅸ ㅿ
-##			Japanese ..................: ソッゞぅぇォゲサじすスせちづでネビべぺまミもモゟヲ
-##			Technical .................: ⌲ ⍋ ⍒ ⍢ ⍤ ⍩
-##			Shapes ....................: ◂ ▸ ▵ ▿
-##			Misc ......................: ⁑ ⋆ ⍣ ʉ ʬ
-##			People ....................: 웃 유
-##			Math ......................: ≠ ≈ ‡ ± ∞ ∮
-## 			Fractions .................: ½ ⅓ ⅔ ¼ ¾ ⅕ ⅖ ⅗ ⅘ ⅙ ⅚ ⅛ ⅜ ⅝ ⅞
-## 			Fractions, small to big ...: ⅛ ⅙ ⅕ ¼ ⅓ ⅜ ⅖ ½ ⅗ ⅝ ⅔ ¾ ⅘ ⅚ ⅞
-##			Alchemy ...................: 🜌 🜣 🜥 🜿 🝅
-##			Runes .....................: ᚠ ᚤ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛝ ᛦ ᛨ ᛬ ᛯ
-##			All, sorted ...............: 웃유~±᛬‡⁑∞∮≈≠⋆⌲⍋⍒⍢⍣⍤⍩▵▸▿◂🜌🜣🜥🜿🝅¢¥₤₸½⅓¼⅕⅙⅛⅔⅖¾⅗⅜⅘⅚⅝⅞ʞʉʬλᚠᚤᚧᚬᚼᛎᛏᛘᛯᛝᛦᛨㅈㅊㅍㅎㅱㅸㅿㅠソッぺミゟ
-##			All v1, by desired usage ..: ʞ λ ± ‡ ⁑ ∞ ∮ ~ ≈ ≠ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ⍣ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ ¢ ¥ ₤ ₸ ᛬ 웃 유 ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ソ ッ ゞ ぅ ぇ ォ ゲ サ じ す ス せ ち づ で ネ ビ べ ぺ ま ミ も モ ゟ ヲ ½ ⅓ ⅔ ¼ ¾ ⅕ ⅖ ⅗ ⅘ ⅙ ⅚ ⅛ ⅜ ⅝ ⅞
-##			All v2, by desired usage (URL-safe, filesystem-safe, CLI-safe, programmer-friendly)
-##				Wordsafe ..............: 0 1 2 3 4 5 6 7 8 9 C F G H J M P Q R V W X c f g h j m p q r v w x ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Ĵ Ŝ Ŵ Ŷ â ĉ ê ĝ ĥ ĵ ŝ ŵ ŷ Ã Ẽ Ñ Ỹ ã ẽ ñ ỹ Ä Ë Ẅ Ẍ Ÿ ä ë ẅ ẍ ÿ Á Ć É Ǵ Ń Ŕ Ẃ Ý á ć é ǵ ń ŕ ẃ ý Ǎ Č Ď Ě Ǧ Ȟ Ǩ Ň Ř Ť ǎ č ď ě ǧ ȟ ǩ ň ř ť ǝ ɹ ʇ ʌ ₸ ᛬ 웃 유 ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ソ ッ ゞ ぅ ぇ ォ ゲ サ じ す ス せ ち づ で ネ ビ べ ぺ ま モ ゟ ヲ
-##				Not wordsafe ..........: 0 1 2 3 4 5 6 7 8 9 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z ʞ λ μ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ᚠ ᚧ ᚬ ᚼ 🜣 🜥 🜿 🝅 ▵ ▸ ▿ ◂ ҂ ‡ ± ⁑ ÷ ∞ ≈ ≠ Ω Ʊ Ξ ψ Ϡ δ ϟ Ћ Ж Я Ѣ ф ¢ £ ¥ § ¿ ɤ ʬ ⍤ ⍩ ⌲ ⍋ ⍒ ⍢ Â Ĉ Ê Ĝ Ĥ Î Ĵ Ô Ŝ Û Ŵ Ŷ Ẑ â ĉ ê ĝ ĥ î ĵ ô ŝ û ŵ ŷ ẑ Ã Ẽ Ĩ Ñ Õ Ũ Ỹ ã ẽ ĩ ñ õ ũ ỹ Ä Ë Ï Ö Ü Ẅ Ẍ Ÿ ä ë ï ö ü ẅ ẍ ÿ Á Ć É Ǵ Í Ń Ó Ŕ Ś Ú Ẃ Ý Ź á ć é ǵ í ń ó ŕ ś ú ẃ ý ź Ā Ē Ī Ō Ū Ȳ ā ē ī ō ū ȳ Ǎ Č Ď Ě Ǧ Ȟ Ǩ Ň Ǒ Ř Š Ǔ ǎ č ď ě ǧ ȟ ǩ ň ǒ ř š ǔ ǝ ɹ ʇ ʌ ₸ ᛬ 웃 유 ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ソ ッ ゞ ぅ ぇ ォ ゲ サ じ す ス せ ち づ で ネ ビ べ ぺ ま モ ゟ ヲ ½ ⅓ ⅔ ¼ ¾ ⅕ ⅖ ⅗ ⅘ ⅙ ⅚ ⅛ ⅜ ⅝ ⅞
-##			All v3 - v2 but machine-sorted by LC_ALL=C or LC_ALL=C.UTF-8; Note that not even standard bases sort property by this method, so this isn't really necessary.
-##				Wordsafe ..............: 웃 유 § ± ¿ ÷ ҂ ᛬ ‡ ⁑ ∞ ≈ ≠ ⌲ ⍋ ⍒ ⍢ ⍤ ⍩ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 ゞ ¢ £ ¥ ₸ 0 1 2 3 4 5 6 7 8 9 á Á â Â ǎ Ǎ ä Ä ã Ã c C ć Ć ĉ Ĉ č Č ď Ď é É ê Ê ě Ě ë Ë ẽ Ẽ ǝ ɤ f F g G ǵ Ǵ ĝ Ĝ ǧ Ǧ h H ĥ Ĥ ȟ Ȟ j J ĵ Ĵ ǩ Ǩ ʞ m M ń Ń ň Ň ñ Ñ p P q Q r R ŕ Ŕ ř Ř ɹ ŝ Ŝ ť Ť ʇ Ʊ v V ʌ w W ẃ Ẃ ŵ Ŵ ẅ Ẅ x X ẍ Ẍ ý Ý ŷ Ŷ ÿ Ÿ ỹ Ỹ ʬ δ λ μ Ξ ϟ ψ Ω Ϡ Ж Ћ ф Ѣ Я ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ぅ ぇ ォ ゲ サ じ す ス せ ソ ち ッ づ で ネ ビ べ ぺ ま モ ゟ ヲ
-##				Not wordsafe ..........: 웃 유 § ± ¿ ÷ ҂ ᛬ ‡ ⁑ ∞ ≈ ≠ ⌲ ⍋ ⍒ ⍢ ⍤ ⍩ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 ゞ ¢ £ ¥ ₸ 0 1 ½ ⅓ ¼ ⅕ ⅙ ⅛ 2 ⅔ ⅖ 3 ¾ ⅗ ⅜ 4 ⅘ 5 ⅚ ⅝ 6 7 ⅞ 8 9 a A á Á â Â ǎ Ǎ ä Ä ã Ã ā Ā b B c C ć Ć ĉ Ĉ č Č d D ď Ď e E é É ê Ê ě Ě ë Ë ẽ Ẽ ē Ē ǝ ɤ f F g G ǵ Ǵ ĝ Ĝ ǧ Ǧ h H ĥ Ĥ ȟ Ȟ i I í Í î Î ï Ï ĩ Ĩ ī Ī j J ĵ Ĵ k K ǩ Ǩ ʞ l L m M n N ń Ń ň Ň ñ Ñ o O ó Ó ô Ô ǒ Ǒ ö Ö õ Õ ō Ō p P q Q r R ŕ Ŕ ř Ř ɹ s S ś Ś ŝ Ŝ š Š t T ʇ u U ú Ú û Û ǔ Ǔ ü Ü ũ Ũ ū Ū Ʊ v V ʌ w W ẃ Ẃ ŵ Ŵ ẅ Ẅ x X ẍ Ẍ y Y ý Ý ŷ Ŷ ÿ Ÿ ỹ Ỹ ȳ Ȳ z Z ź Ź ẑ Ẑ ʬ δ λ μ Ξ ϟ ψ Ω Ϡ Ж Ћ ф Ѣ Я ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ぅ ぇ ォ ゲ サ じ す ス せ ソ ち ッ づ で ネ ビ べ ぺ ま モ ゟ ヲ
-##				48j1 .................: ± ҂ ‡ ⁑ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 0 1 2 3 4 5 6 7 8 9 c f g h j ʞ m p q r v w x λ μ ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ
-##				64j1u ................: 0 1 2 3 4 5 6 7 8 9 a A b B c C d D e E f F g G h H i I j J k K ʞ l L m M n N o O p P q Q r R s S t T u U v V w W x X y Y z Z λ
-##				64j1w ...............: ± ÷ ҂ ‡ ⁑ ∞ ≈ ≠ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 0 1 2 3 4 5 6 7 8 9 c C f F g G h H j J ʞ m M p P q Q r R v V w W x X λ μ ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ
-##				128j1 ................: § ± ¿ ÷ ҂ ‡ ⁑ ∞ ≈ ≠ ⌲ ⍋ ⍒ ⍢ ⍤ ⍩ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 ¢ £ ¥ 0 1 2 3 4 5 6 7 8 9 Á â Â ä Ä ã Ã c C Ć ĉ Ĉ É ê Ê ë Ë ẽ Ẽ ɤ f F g G ĝ Ĝ h H ĥ Ĥ j J ĵ Ĵ ʞ m M ñ Ñ p P q Q r R ŝ Ŝ Ʊ v V w W ŵ Ŵ ẅ Ẅ x X ẍ Ẍ ŷ Ŷ ÿ Ÿ ỹ Ỹ ʬ δ λ μ Ξ ϟ ψ Ω Ϡ Ж Ћ ф Ѣ Я ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ
-##				256j1 ................: 웃 유 § ± ¿ ÷ ҂ ᛬ ‡ ⁑ ∞ ≈ ≠ ⌲ ⍋ ⍒ ⍢ ⍤ ⍩ ▵ ▸ ▿ ◂ 🜣 🜥 🜿 🝅 ゞ ¢ £ ¥ ₸ 0 1 2 3 4 5 6 7 8 9 a A á Á â Â ǎ Ǎ ä Ä ã Ã ā Ā b B c C ć Ć ĉ Ĉ č Č d D ď Ď e E é É ê Ê ě Ě ë Ë ẽ Ẽ ē Ē ǝ ɤ f F g G ǵ Ǵ ĝ Ĝ ǧ Ǧ h H ĥ Ĥ ȟ Ȟ i I í Í î Î ï Ï ĩ Ĩ ī Ī j J ĵ Ĵ k K ǩ Ǩ ʞ l L m M n N ń Ń ň Ň ñ Ñ o O ó Ó ô Ô ǒ Ǒ ö Ö õ Õ ō Ō p P q Q r R ŕ Ŕ ř Ř ɹ s S ś Ś ŝ Ŝ š Š t T ʇ u U ú Ú û Û ǔ Ǔ ü Ü ũ Ũ ū Ū Ʊ v V ʌ w W ẃ Ẃ ŵ Ŵ ẅ Ẅ x X ẍ Ẍ y Y ý Ý ŷ Ŷ ÿ Ÿ ỹ Ỹ ȳ Ȳ z Z ź Ź ẑ Ẑ ʬ δ λ μ Ξ ϟ ψ Ω Ϡ Ж Ћ ф Ѣ Я ᚠ ᚧ ᚬ ᚼ ᛎ ᛏ ᛘ ᛯ ᛝ ᛦ ᛨ ㅈ ㅊ ㅍ ㅎ ㅱ ㅸ ㅠ ぅ ぇ ォ ソ ッ
-##		Not OK
-##			Standard
-##				Bad for filesystems ...:   "             *         / :   <   > ?     \           |
-##				Bad for internet ......:     $   &         + ,     / : ;   =   ? @
-##				Bad for programmers ...: ! " $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
-## 			Fractions
-##				Don't fit .............: ↉ ⅐ ⅑ ⅒
-##			Misc don't fit [sorted] ...: 🯅⌁★☜☝☞☟☢☣☤☮☯☻♚♛♞♠♣♥♦♫⚓⚖⛁⛈ⒸⒹⒻⒼⒽⒿⓀⓂⓃⓅⓆⓇⓉⓋⓌⓍⓎⓒⓓⓕⓖⓗⓙⓚⓜⓝⓟⓠⓡⓣⓥⓦⓧⓨϠѰ
+##	Copyright © 2022-2026 Jim Collier (ID: 1cv◂‡Vᛦ)
+##	Licensed under the GNU General Public License v2.0 or later. Full text at:
+##		https://spdx.org/licenses/GPL-2.0-or-later.html
+##	SPDX-License-Identifier: GPL-2.0-or-later
 
 
 ##	History:
@@ -793,3 +719,4 @@ fMain "${1}" "${2}" "${3}" "${4}" "${5}" "${6}" "${7}" "${8}" "${9}" "${10}" "${
 ##			- Removed a large amount of unused boilerplate, debugging, and profiling code that has been in here from day one.
 ##			- Allow switches to only have a single leading-dash, without complaining about invalid args.
 ##			- Remove some unnecessary code paths, such as arg-parser building a flat string of args.
+##		- 20260423 JC: Breaking changes with v1 necessitated v1b. (v2 is already underway and even more different.)
