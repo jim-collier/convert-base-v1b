@@ -31,7 +31,7 @@
 declare -r exePath="$(realpath -e "$(dirname "${0}")/../convert-base-v1b")"
 
 
-fUnitTest(){
+fMain(){
 
 	## Variables
 	local inputVal=""  expectVal=""  gotVal=""  tmpVal=""
@@ -44,6 +44,15 @@ fUnitTest(){
 	fEcho_Clean; fEcho_Clean "${exePath}"
 	"${exePath}" --version ; fEcho_WasLastEchoBlank_Set 1 ; sleep 1
 
+
+	####
+	#### Looped self-comparing runs with random input base, input length, base-appropriate input symbols, and output base
+	####
+
+	loopCount=100
+	fFuzzTest_Self
+
+
 	## Test val to use for next few sections
 	inputVal="00012345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
 
@@ -54,12 +63,13 @@ fUnitTest(){
 	## 128v1compat
 	#expectVal="$(convert-base-v1  "${inputVal}"  128j1)"  #; echo "${expectVal}"
 	expectVal="ẽ🝅q¥fᚧ▵jj⍩Ξ4⍩ŷᚠMϠÿ≈⍤prẌŶãʞ1HÃ⍋ϟ‡mpcδñjĥWHᚼh▿ĉp⍢ỹʬ1QfẅF1VpλμɤЖG2ĵ5Ϡ⍋Éw≠Éẍ🝅ᛘẅμ"
-	fRunTest  '=='  "'${exePath}'  ${inputVal}  128v1compat"
+	fRunTest  '=='  "${expectVal}"  "'${exePath}'  ${inputVal}  128v1compat"
 
 	## 128j1
 	#expectVal="$(convert-base-v2  "${inputVal}"  128jc)"  # ; echo "${expectVal}" | ct
 	expectVal="⍩pT🜿NjqQQ҂ᛏ4҂¥iFᛯÔʞ◂SUĈδ⍤Y1D§±ᛦvRSMᛝ⌲QѢKDlPsЋS÷⍋▿1HNÎB1JSZa▸ᚠC2ф5ᛯ±ŴWλŴĴpdÎa"
-	fRunTest  '=='  "'${exePath}'  ${inputVal}  128j1"
+	fRunTest  '=='  "${expectVal}"  "'${exePath}'  ${inputVal}  128j1"
+
 
 	####
 	#### By-hand one-way tests, expect NOT equal
@@ -68,14 +78,8 @@ fUnitTest(){
 	## 128j1 != 128v1compat
 	#expectVal="$(convert-base-v1  "${inputVal}"  128j1)"  #; echo "${expectVal}"
 	expectVal="ẽ🝅q¥fᚧ▵jj⍩Ξ4⍩ŷᚠMϠÿ≈⍤prẌŶãʞ1HÃ⍋ϟ‡mpcδñjĥWHᚼh▿ĉp⍢ỹʬ1QfẅF1VpλμɤЖG2ĵ5Ϡ⍋Éw≠Éẍ🝅ᛘẅμ"
-	fRunTest  '!='  "'${exePath}'  ${inputVal}  128j1"
+	fRunTest  '!='  "${expectVal}"  "'${exePath}'  ${inputVal}  128j1"
 
-	####
-	#### By-hand round-trips self-tests, expect equal.
-	####
-
-	expectVal="12345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
-	fRunChained_TestLast  '=='  "'${exePath}'  --ibase 10  ${inputVal}  base16 ; '${exePath}'  --ibase 16  %CMD1_OUTPUT%  base10"
 
 	####
 	#### By-hand one-way tests, expect ERROR
@@ -83,15 +87,15 @@ fUnitTest(){
 
 	## Removed base 16 as input, should error.
 	expectVal=""
-	fRunTest  'error'  "'${exePath}'  --ibase 26  'ABCXYZ'  10"
+	fRunTest  'error'  "${expectVal}"  "'${exePath}'  --ibase 26  'ABCXYZ'  10"
+
 
 	####
-	#### Looped self-comparing runs with random input base, input length, base-appropriate input symbols, and output base
+	#### By-hand round-trips self-tests, expect equal.
 	####
 
-	loopCount=100
-	fFuzzTest_Self
-
+	expectVal="12345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
+	fRunChained_TestLast  '=='  "${expectVal}"  "'${exePath}'  --ibase 10  ${inputVal}  base16 ; '${exePath}'  --ibase 16  %CMD1_OUTPUT%  base10"
 
 :;}
 
@@ -181,7 +185,7 @@ fFuzzTest_Self(){
 
 		## Run the second command with the previous command's output as this command's input.
 		## This command's output should be the same as the previous command's input.
-		fRunTest  '=='  "'${exePath}'  --ibase ${outputBase}  ${cmd1Output_cmd2Input}  ${inputBase}"
+		fRunTest  '=='  "${expectVal}"  "'${exePath}'  --ibase ${outputBase}  ${cmd1Output_cmd2Input}  ${inputBase}"
 
 	done
 
@@ -191,12 +195,12 @@ fFuzzTest_Self(){
 #•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 # Generic code
 #•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-fMain(){
+fEntryPoint(){
 	local -i count_Tests=0
 	local -i count_Passed=0
 	local -i count_Failed=0
 	set +e
-		fUnitTest
+		fMain
 	set -e
 	fEcho_Clean; fEcho_Clean "Results:"
 	fEcho_Clean "Total tests .........: ${count_Tests}"
@@ -212,7 +216,7 @@ declare -i currentPassStreak=0
 declare    __fRunTest_EchoHook1=""
 fRunTest(){
 	local -r  testMode="${1:-}"   ; shift || true   ## 'equal', 'notequal', 'error'.
-#	local -r  expectVal="${1:-}"  ; shift || true   ## Inherit from parent instead.
+	local -r  expectVal="${1:-}"  ; shift || true   ## Inherit from parent instead.
 	local -r  cmdStr="${1:-}"     ; shift || true
 
 	local -i  errNum=0
@@ -269,28 +273,11 @@ fRunTest(){
 
 :;}
 
-fGetIsolatedExeName(){
-	## If called like: fGetIsolatedExeName  executableName  theRestOfCommand  "'/my/path/to/MyExecutable' --arg1 'arg2'", this function will:
-	##	- Set caller's variable $executableName to "MyExecutable".
-	##	- Set caller's variable $theRestOfCommand to " --arg1 'arg2'".
-	local -n  retVarName_CmdName_1myq1b5="${1:-}"   ; shift || true   ## The parent variable to populate with the isolated command 'basename' (no path).
-	local -n  retVarName_TheRest_1myq1b5="${1:-}"   ; shift || true   ## The parent variable to populate with the rest of the command-line after the executable.
-	local -r  commandString="${1:-}"                ; shift || true   ## The full command line
-	retVarName_CmdName_1myq1b5=""
-	retVarName_TheRest_1myq1b5=""
-	local isolatedExeName=""
-	local strAfterThat=""
-	isolatedExeName="$(echo "${commandString}" | grep -oP "\'[^\']*\'" | head -n 1)"
-	strAfterThat=${commandString#*"${isolatedExeName}"}
-	isolatedExeName="$(basename "${isolatedExeName}")"
-	isolatedExeName="${isolatedExeName#\'}"; isolatedExeName="${isolatedExeName%\'}"
-	retVarName_CmdName_1myq1b5="${isolatedExeName}"
-	retVarName_TheRest_1myq1b5="${strAfterThat}"
-}
-
+##
 fRunChained_TestLast(){
 	## Args
 	local -r  testMode="${1:-}"   ; shift || true   ## 'equal', 'notequal', 'error'.
+	local -r  expectVal="${1:-}"  ; shift || true   ## Inherit from parent instead.
 	local -r  cmdStrs="${1:-}"    ; shift || true   ## >=1 commands with ';' as delimiter.
 	## Variables
 	local -a  cmdArr=()
@@ -310,7 +297,7 @@ fRunChained_TestLast(){
 		((i > 0))  &&  nextCmd="${nextCmd//"%CMD${i}_OUTPUT%"/"${cmdOutputs[i-1]:-}"}"  ## '%CMDn_OUTPUT%' is 1-based, array is 0-based.
 		if ((i == lastNonEmptyIdx)); then
 			## It's the last one so test it
-			fRunTest  "${testMode}"  "${nextCmd}"
+			fRunTest  "${testMode}"  "${expectVal}"  "${nextCmd}"
 		else
 			## Run normally
 			cmdOutputs[i]="$(eval "${nextCmd}")"
@@ -327,7 +314,8 @@ fPipe_LogAndShowPartialOutput_InitLogfile(){
 	[[ -n "${filePath_Log}" ]]  ||  filePath_Log="${BASH_SOURCE[0]%.*}.log"
 	[[ -d "$(dirname "${filePath_Log}")" ]]  ||  { echo -e "\nError in $(basname "${BASH_SOURCE[0]}").${FUNCNAME[0]}(): Directory for logfile not found: '$(dirname "${filePath_Log}")'.\n" ; return 1; }
 	[[ -f "${filePath_Log}.prev" ]] && rm                    "${filePath_Log}.prev"
-	[[ -f "${filePath_Log}"      ]] && mv "${filePath_Log}"  "${filePath_Log}.prev"
+#	[[ -f "${filePath_Log}"      ]] && mv "${filePath_Log}"  "${filePath_Log}.prev"
+	[[ -f "${filePath_Log}     " ]] && rm                    "${filePath_Log}"
 	__fPipe_LogAndShowPartialOutput_LogFile="${filePath_Log}"
 	touch "${__fPipe_LogAndShowPartialOutput_LogFile}"
 }
@@ -382,6 +370,25 @@ fPipe_LogOnly() {
         printf '%s  %s\n' "$ts" "$line" >> "$__fPipe_LogAndShowPartialOutput_LogFile"
         printf '%s\n' "$line"
     done
+}
+
+fGetIsolatedExeName(){
+	## If called like: fGetIsolatedExeName  executableName  theRestOfCommand  "'/my/path/to/MyExecutable' --arg1 'arg2'", this function will:
+	##	- Set caller's variable $executableName to "MyExecutable".
+	##	- Set caller's variable $theRestOfCommand to " --arg1 'arg2'".
+	local -n  retVarName_CmdName_1myq1b5="${1:-}"   ; shift || true   ## The parent variable to populate with the isolated command 'basename' (no path).
+	local -n  retVarName_TheRest_1myq1b5="${1:-}"   ; shift || true   ## The parent variable to populate with the rest of the command-line after the executable.
+	local -r  commandString="${1:-}"                ; shift || true   ## The full command line
+	retVarName_CmdName_1myq1b5=""
+	retVarName_TheRest_1myq1b5=""
+	local isolatedExeName=""
+	local strAfterThat=""
+	isolatedExeName="$(echo "${commandString}" | grep -oP "\'[^\']*\'" | head -n 1)"
+	strAfterThat=${commandString#*"${isolatedExeName}"}
+	isolatedExeName="$(basename "${isolatedExeName}")"
+	isolatedExeName="${isolatedExeName#\'}"; isolatedExeName="${isolatedExeName%\'}"
+	retVarName_CmdName_1myq1b5="${isolatedExeName}"
+	retVarName_TheRest_1myq1b5="${strAfterThat}"
 }
 
 fScrambleString(){
@@ -479,7 +486,7 @@ trap '{ ((isExpectingError))  &&  ((++count_Errors_Expected)); }  ||  ((++count_
 
 
 fPipe_LogAndShowPartialOutput_InitLogfile
-fMain | fPipe_LogAndShowPartialOutput
+fEntryPoint | fPipe_LogAndShowPartialOutput
 
 
 

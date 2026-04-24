@@ -17,7 +17,7 @@
 ## shellcheck disable=2053  ## 'Quote the right-hand sid of = in [[ ]] to prevent glob matching.' Disable for Yoda Notation.
 ## shellcheck disable=2143  ## 'Use grep -q instead of echo | grep'
 
-##	Purpose: See fAbout() below.
+##	Purpose: Wrapper for build, test, copy to local for dogfood, push to github. Calls test.sh, no need to call that separately.
 ##	History: At bottom of this file. (Note: History for this is maintained outside of [or in addition to] git project.)
 
 ##	Copyright © 2022-2026 Jim Collier (ID: 1cv◂‡Vᛦ)
@@ -31,10 +31,10 @@
 if [[ -z "${doQuietly+x}" ]]; then
 
 	## Settings
-	declare    dirPath_Source=".."
-	declare    filePath_ExecToTestAndInstall="${dirPath_Source}/convert-base-v1b"
-	declare    filePath_TestExec="../test/test.sh"
-	declare    gitAutomationScript="n8git_backup-and-publish"
+	declare    dirPath_Source=".." #....................................................: Relative paths will be resolved later.
+	declare    filePath_ExecToTestAndInstall="../convert-base-v1b" #....................: Relative paths will be resolved later.
+	declare    filePath_TestExec="../cicd/test.sh" #....................................: Relative paths will be resolved later.
+	declare    gitAutomationScript="../utility/n8git_backup-and-publish" #..............: Relative paths will be resolved later.
 	declare -a preferredInstallPaths=("${HOME}/synced/0-0/common/exec/util/linux/bin"  "/usr/local/sbin/")  ## First one that exists, wins
 
 	## Generic constants
@@ -110,34 +110,28 @@ fMain(){
 	fParseArgs  "${1:-}" "${2:-}" "${3:-}" "${4:-}" "${5:-}" "${6:-}" "${7:-}" "${8:-}" "${9:-}" "${10:-}" "${11:-}" "${12:-}" "${13:-}" "${14:-}" "${15:-}" "${16:-}" "${17:-}" "${18:-}" "${19:-}" "${20:-}" "${21:-}" "${22:-}" "${23:-}" "${24:-}" "${25:-}" "${26:-}" "${27:-}" "${28:-}" "${29:-}" "${30:-}" "${31:-}" "${32:-}"
 	readonly allArgsArr
 
-	## Constants
+	## Paths
 	local -r dirPath_me="$(dirname "${mePath}")"
-	dirPath_Source="$(realpath         -e "${dirPath_me}/${dirPath_Source}")"         ; readonly dirPath_Source
-	filePath_ExecToTestAndInstall="$(realpath -e "${dirPath_me}/${filePath_ExecToTestAndInstall}")" ; readonly filePath_ExecToTestAndInstall
-	filePath_TestExec="$(realpath      -e "${dirPath_me}/${filePath_TestExec}")"      ; readonly filePath_TestExec
-	local gitAutomationScript_verified="${gitAutomationScript}"
-	if [[ -x "${gitAutomationScript_verified}" ]]; then
-		gitAutomationScript_verified="$(realpath -e "${gitAutomationScript_verified}")"
-	else
-		gitAutomationScript_verified="$(which "${gitAutomationScript_verified}" 2>/dev/null || true)"
-	fi
-	readonly gitAutomationScript_verified
+	fResolvePath  dirPath_Source                 "${dirPath_Source}"                 ; readonly dirPath_Source
+	fResolvePath  filePath_ExecToTestAndInstall  "${filePath_ExecToTestAndInstall}"  ; readonly filePath_ExecToTestAndInstall
+	fResolvePath  filePath_TestExec              "${filePath_TestExec}"              ; readonly filePath_TestExec
+	fResolvePath  gitAutomationScript            "${gitAutomationScript}"            ; readonly gitAutomationScript
 
 	## Validate
-	[[ -d "${dirPath_me}"                   ]]  ||  fThrowError "Path not found: '${dirPath_me}'"
-	[[ -d "${dirPath_Source}"               ]]  ||  fThrowError "Path not found: '${dirPath_Source}'"
-	[[ -f "${filePath_TestExec}"            ]]  ||  fThrowError "File not found: '${filePath_TestExec}'"
-	[[ -f "${filePath_TestExec}"            ]]  ||  fThrowError "File not found: '${filePath_TestExec}'"
-	[[ -n "${gitAutomationScript_verified}" ]]  ||  fThrowError "Git automation script not found where specified or in path: '${gitAutomationScript}'."
+	[[ -d "${dirPath_me}"           ]]  ||  fThrowError "Path not found: '${dirPath_me}'"
+	[[ -d "${dirPath_Source}"       ]]  ||  fThrowError "Path not found: '${dirPath_Source}'"
+	[[ -f "${filePath_TestExec}"    ]]  ||  fThrowError "File not found: '${filePath_TestExec}'"
+	[[ -f "${filePath_TestExec}"    ]]  ||  fThrowError "File not found: '${filePath_TestExec}'"
+	[[ -n "${gitAutomationScript}"  ]]  ||  fThrowError "Git automation script not found where specified or in path: '${gitAutomationScript}'."
 
 	## Prompt to continue
 	if ((! doQuietly)); then
 		fCopyright
 		fAbout
 		fEcho_Clean "Source directory .............: ${dirPath_Source}"
-		fEcho_Clean "Executable to build etc. .....: ${filePath_ExecToTestAndInstall}"
+#		fEcho_Clean "Executable to build etc. .....: ${filePath_ExecToTestAndInstall}"
 		fEcho_Clean "Test script ..................: ${filePath_TestExec}"
-		fEcho_Clean "Git commit and push script ...: ${gitAutomationScript_verified}"
+		fEcho_Clean "Git commit and push script ...: ${gitAutomationScript}"
 		fIntroPromptToContinue  ""
 		fEcho_Clean
 	fi
@@ -173,14 +167,14 @@ fMain(){
 	done
 
 	## Git automation script (e.g. commit, push)
-	"${gitAutomationScript_verified}"
+	"${gitAutomationScript}"
+
+#	## Run fMain_Chained(), as sudo if necessary, with important variables [and/or fArgs_*] serialized.
+#	((doAsSudo))  &&  fChainToFunc  'fMain_Chained'  "$(declare -p  doQuietly  ogUSER  ogHOME)"
 
 	## Done; either fChainToFunc() -> fMain_Chained() returned, or this script run in a sudo subshell [running only fMain_Chained()] returned.
 	((! doQuietly)) && { fEcho "${meName}: Done."; fEcho; }
-
-#	## Run fMain_Chained(), as sudo if necessary, with important variables [and/or fArgs_*] serialized.
-#	fChainToFunc  'fMain_Chained'  "$(declare -p  doQuietly  ogUSER  ogHOME)"
-}
+:;}
 
 
 #••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
@@ -191,10 +185,10 @@ fMain_Chained(){
 
 	## Revalidate
 	[[   -z "${doQuietly}" ]]                && { fThrowError "Arg not set: doQuietly" ; return 1; }
-	[[   -z "${ogUSER}" ]]                   && { fThrowError "Arg not set: ogUSER" ; return 1; }
-	[[   -z "${ogHOME}" ]]                   && { fThrowError "Arg not set: ogHOME" ; return 1; }
+	[[   -z "${ogUSER}" ]]                   && { fThrowError "Arg not set: ogUSER"    ; return 1; }
+	[[   -z "${ogHOME}" ]]                   && { fThrowError "Arg not set: ogHOME"    ; return 1; }
 
-}
+:;}
 
 
 #•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
@@ -313,6 +307,26 @@ fCleanup(){
 
 #•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 ## Generic functions
+fResolvePath(){
+	## First looks at specified raw path. Next, same path but relative to this script. Next, in $PATH for an executable. Next, in this script's path, + /lib, /include, then /includes.
+	local -n parentVarName_ResolvedPath_t4rej=${1:-}  ; shift || true  ## Parent variable to store fully resolved path in.
+	local    nameOrPath="${1:-}"                      ; shift || true  ## File or folder path (relative or absolute). If an executable file, can be just a name to search in $PATH, to fully resolve.
+	[[   -z "${nameOrPath}" ]]  &&  { echo -e "\nError in $(basename "${BASH_SOURCE[0]}")·${FUNCNAME[0]}(): No path specified to resolve.\n"; fEcho_WasLastEchoBlank_Set 1; return 1; }
+	local -r mePath_t4rfg="$(dirname "${BASH_SOURCE[0]}")"
+	local -i isNopathObject=0 ; [[ "${nameOrPath}" == "$(basename "${nameOrPath}")" ]] && isNopathObject=1 ; readonly isNopathObject
+	local    testPath="${nameOrPath}"
+	  [[ ! -e "${testPath}"   ]]                           &&  testPath="${mePath_t4rfg}/${nameOrPath}"
+	{ [[ ! -e "${testPath}"   ]] && ((isNopathObject)); }  &&  testPath="$(which "${nameOrPath}" 2>/dev/null || true)"
+	{ [[ ! -e "${testPath}"   ]] && ((isNopathObject)); }  &&  testPath="${mePath_t4rfg}/lib/${nameOrPath}"
+	{ [[ ! -e "${testPath}"   ]] && ((isNopathObject)); }  &&  testPath="${mePath_t4rfg}/include/${nameOrPath}"
+	{ [[ ! -e "${testPath}"   ]] && ((isNopathObject)); }  &&  testPath="${mePath_t4rfg}/includes/${nameOrPath}"
+	  [[ ! -e "${testPath}"   ]]                           &&  { echo -e "\nError in $(basename "${BASH_SOURCE[0]}")·${FUNCNAME[0]}(): Could not resolve path '${nameOrPath}' [£ǝŔc].\n"; fEcho_WasLastEchoBlank_Set 1; return 1; }
+	testPath="$(realpath -e "${testPath}" 2>/dev/null || true)"
+	## Last check to fail on
+	{ [[ -n "${testPath}" ]] && [[ -e "${testPath}" ]]; } || { echo -e "\nError in $(basename "${BASH_SOURCE[0]}")·${FUNCNAME[0]}(): Could not resolve path '${nameOrPath}' [£ǝŔs].\n"; fEcho_WasLastEchoBlank_Set 1; return 1; }
+	## Success
+	parentVarName_ResolvedPath_t4rej="${testPath}"
+}
 fGetOgUserName(){
 	local -n varName_s74rg=$1  ## Arg <REQUIRED>: Variable reference for result.
 	local    retVal=""
