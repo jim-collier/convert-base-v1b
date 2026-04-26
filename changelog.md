@@ -8,6 +8,34 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.0.0
+
+Published 2026-04-25.
+
+### Notes
+
+This contains changes made through v1.0.0-beta1 and to release v1.0.0.
+
+### Added
+
+- More base aliases.
+
+- Added scripting for exhaustive fuzz testing, including of base names and aliases (caught many edge-case bugs).
+
+- Added scripting for exhaustive fuzz testing against v2. Even in beta, v2 can accurately handle _inputs_ of all the bases, whereas testing against self is limited to the input bases this version supports. In this way, v1b can be tested against all the bases it supports.
+
+### Changed
+
+- While older aliases still work, the advertised base names have been more streamlined and rationalized.
+
+- Fixed numerous minor bugs found in fuzz testing.
+
+- Improved help; now sorts by base #, rather than grouping them in category chunks. Added a column of whether its a standard base, pseudostandard, published, or custom (rather than aforementioned groups).
+
+- Polished CI/CD/Dogfood scripts.
+
+- Updated README.md with better and accurate examples.
+
 ## v1.0.0-beta1
 
 ### Notes

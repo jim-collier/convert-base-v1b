@@ -138,31 +138,31 @@ Note that some of the larger bases appear to have longer output - but that's onl
 
 |Base         | Chars | Number representation
 |:--          | --:   | :--
-|   2         |   101 | 11001100010001111010101010101001101101001000111010011010010010010001000110101111111100000000000000001
-|   8         |    34 | 3142172525155107232222106577400001
-|__10__       |    31 | __2023090613425900000000000000001__
-|  16         |    26 | 1988F5553691D3492235FE0001
-|  26         |    22 | DXNNAGDDUWPNKQIDYGEAMJ
-|  32[r]      |    21 | BTCHVKU3JDU2JEI274AAB
-|  32h        |    21 | 1J27LAKR93KQ948QVS001
-|  32c        |    21 | 1K27NAMV93MT948TZW001
-|  32w        |    21 | 3X49fGcqF5cpF6Cpxr223
-|  36         |    20 | 5G53VAIZAJBZ2D5Y2Y9T
-|  38hostname |     |
-|  39username |     |
-|  45email    |     |
-|  48j1w      |     |
-|  52         |    18 | NftxKBqjrhTdQKHAGJ
-|  62         |    17 | gR7BplOIkweh9aKht
-|  64[r]      |    17 | PYFLLDf7JII8r/W01
-|  64u        |    17 | PYFLLDf7JII8r_W01
-|  64h        |     |
-|  64j1       |     |
-|  64j1w      |     |
-| 128j1w      |     |
-| 128j1       |     |
-| 256j1       |    13 | Pĵㅍ‡sĨǍᚧYrぇ01
-| 288j1       |    13 | 6zф⅖ẄÃЋゲㅎぇúkᛎ
+|   2         |   120 | 101111100011011100011110000110110111101101111000011101111110000011011000101110110010001100111110011111111010110100010101
+|   8         |    40 | 5743343606675570357603305662147637726425
+|__10__       |    36 | __987654321000055555555550000123456789__
+|  16         |    30 | BE371E1B7B7877E0D8BB233E7FAD15
+|  26         |    26 | EELUTHVVEDOHUKYXZVZLZBWNXL
+|  32[r]      |    24 | XY3R4G33PB36BWF3EM7H7LIV
+|  32h        |    24 | NORHS6RRF1RU1M5R4CV7VB8L
+|  32c        |    24 | QRVHW6VVF1VY1P5V4CZ7ZB8N
+|  32w        |    24 | hjqVr8qqQ3qw3g7q6Jx9xHCf
+|  36         |    24 | 1L0CRVVUFHZO5Z4EHIOCISK5
+|  38hostname |    23 | hdf8q5vjdfxd3t-gwe75u9v
+|  39username |    23 | 9v6de929rpvilgdb1gm7o_b
+|  45email    |    22 | i:_mxqm7shopf.y02f:75e
+|  48jc1ws    |    22 | 6ᚠPv4ᛨHG2ᛘᛯᛘHᚧ9phgμCq7
+|  52         |    21 | vNoFHYtcznezzzJbezdYl
+|  62         |    21 | 1OvZg4xLjgW5p6V6TBcCT
+|  64[r]      |    20 | vjceG3t4d+DYuyM+f60V
+|  64u        |    20 | vjceG3t4d-DYuyM-f60V
+|  64h        |    20 | lZSU6tjuT-3OkoC-VwqL
+|  64j1       |    20 | lZSU6tjuTʞ3OkoCʞVwqL
+|  64jc1ws    |    20 | 🜥ᛎrw8‡ᚼ±vΩ5j🜣▵JΩx÷▿f
+| 128jc1ws    |    18 | 3ΩqЯδ‡ĤŴŷÛŝ🜣â▸ĨỹĜf
+| 128jc1      |    18 | 1ʞRᛨᛘt≠δ⍤Ϡ¿kЖp⍒Û≈L
+| 256jc1      |    15 | ítURĴĜÊčȞćZʞŴÁL
+| 288jc1      |    15 | aẌňẌỹńÓまĩćaÎɤŸỸ
 
 ## Why is the version in the command name
 
