@@ -8,6 +8,18 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.0.2
+
+Published 2026-04-26.
+
+### Added
+
+- Minor additions and clarifications to README.md.
+
+### Changed
+
+- Minor change to the way `--version` and `--about` are shown.
+
 ## v1.0.1
 
 Published 2026-04-26.

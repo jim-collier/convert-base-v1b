@@ -193,7 +193,7 @@ Note that some of the larger bases appear to have longer output - but that's onl
 ## Document history
 
 - 2026-04-26:
-	- Updated for v1.0.1.
+	- Updated for v1.0.1 (and v1.0.2).
 	- Fixed minor errors in this section.
 - 2026-04-25:
 	- Updated for v1.0.0
