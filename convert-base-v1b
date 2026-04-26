@@ -178,7 +178,7 @@ fMain(){
 	local -ra base39username=($(echo {0..9} {a..z} "- _ ."))
 	local -ra base45email=($(echo {0..9} {a..z} "- _ % + . : @ [ ]"))
 
-		## Args (1] Define placeholder variables; 2] Call fInit() to set them; 3] Freeze them read-only.)
+	## Args
 	local    arg_inputVal=""
 	local    arg_inBase=""
 	local    arg_outBase=""
