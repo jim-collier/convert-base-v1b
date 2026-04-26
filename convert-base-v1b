@@ -13,7 +13,7 @@
 # shellcheck disable=2207
 # shellcheck disable=2181
 
-##	Purpose: See fPrint_About() below.
+##	Purpose: See fAbout() below.
 ##	Notes:
 ##		- THIS SCRIPT IS MANAGED ON GITHUB.
 ##		- See bottom of file for examples of numbers in various bases, and the space-saving percentages.
@@ -29,46 +29,57 @@
 declare -i    doDebug=0
 declare -i    runAsSudo=0
 declare -i    doQuietly=0; [[ "${X9CONVERTBASE1_QUIET}" == "1" ]] && doQuietly=1
-declare       thisVersion="v1.0.0"
-declare       thisBuild="1mytv00"
+declare       thisVersion="v1.0.1"
+declare       thisBuild="1mywapq"
 declare       thisCopyrightYear="2023-2026"
 declare       thisAuthor="Jim Collier (ID: 1cv◂‡Vᛦ)"
 
 
 ## Version, copyright, about, syntax (minified but not obfuscated)
+## Note: Echoing rather than HEREDOC is preferrable becaus - while slower - that's not
+##       an issue in this context, and more importantly, HEREDOC is too hard to manage
+##       indentation, esp. for the fSyntax() section.
+
 fVersion(){ { ((doQuietly)) || ((wasShown_Version)); } && return; wasShown_Version=1;
 	fEcho_Clean "$(basename "${0}") ${thisVersion} build ${thisBuild}" ;:;}
 fCopyright(){ { ((doQuietly)) || ((wasShown_Copyright)); } && return; wasShown_Copyright=1;
 	fEcho_Clean ""
 	fEcho_Clean "$(basename "${0}") ${thisVersion} build ${thisBuild},"
 	fEcho_Clean "Copyright © ${thisCopyrightYear} ${thisAuthor}."
+	fEcho_Clean "Project: https://github.com/jim-collier/convert-base-v1b"
 	fEcho_Clean "Licensed under the GNU General Public License v2.0 or later. Full text at:"
 	fEcho_Clean "  https://spdx.org/licenses/GPL-2.0-or-later.html"
 	fEcho_Clean "No warranty."
 	fEcho_Clean "" ;:;}
+
 fAbout(){ { ((doQuietly)) || ((wasShown_About)); } && return; wasShown_About=1;
 	fEcho_Clean ""
 	#           X"-------------------------------------------------------------------------------"X
-	fEcho_Clean "Converts from some bases to a wide variety of others. Strictly positional"
-	fEcho_Clean "notation conversion, not for binary-to-text encoding/decoding. (Though you"
-	fEcho_Clean "can use the same common 2^N encoding bases as positional notation.)"
+	fEcho_Clean "Converts from four possible input bases (including 10), to 29 possible output"
+	fEcho_Clean "bases. Strictly positional notation conversion, not for binary-to-text"
+	fEcho_Clean "encoding/decoding. (Though you can use the same common 2^N encoding bases such"
+	fEcho_Clean "as base32 or base64, as positional notation.)"
 	fEcho_Clean "" ;:;}
+
 fSyntax(){  { ((doQuietly)) || ((wasShown_Syntax)); } && return; wasShown_Syntax=1;
 	fEcho_Clean ""
 	#           X"-------------------------------------------------------------------------------"X
 	fEcho_Clean "Syntax: ${meName}  [optional args]  <NUMBER>  <OBASE>"
 	fEcho_Clean "  Required arguments (in any order):"
-	fEcho_Clean "    <NUMBER> .........: The value to convert, in form --ibase"
-	fEcho_Clean "    <OBASE> ..........: The base to convert to"
+	fEcho_Clean "    <NUMBER> .........: The input value to convert"
+	fEcho_Clean "    <OBASE> ..........: The base to convert to (default 10 if not specified)"
 	fEcho_Clean "  Optional arguments:"
-	fEcho_Clean "    --ibase <base> ...: The input base (assumed to be 10 ifnot specified)"
+	fEcho_Clean "    --ibase <base> ...: The input base (default 10 if not specified)"
+	fEcho_Clean "    --from  <base> ...: Alias for '--ibase'"
+	fEcho_Clean "    --obase <base> ...: Optional explicit flag for output base."
+	fEcho_Clean "    --to  <base> .....: Alias for '--obase'"
 	fEcho_Clean "    --lcase ..........: Lower case (for bases with alpha and only one case)"
 	fEcho_Clean "    --clipin .........: Use clipboard for input"
 	fEcho_Clean "    --clipout ........: Use clipboard for output"
 	fEcho_Clean "    --silent .........: No CLI output. Also sets --clipout."
-	fEcho_Clean "    --help"
+	fEcho_Clean "    --help, --about, --version [or -h, -a, -v]"
 	fEcho_Clean "  Valid values for output <base>"
-	fEcho_Clean "  Note: ST=STandard, PS=PseudoStandard, PUB=Published, C=Custom":
+	fEcho_Clean "    Note: ST=Standard, PS=Pseudostandard, PUB=Published, C=Custom":
 	fEcho_Clean "        2      ST  aka Binary ................. 0,1"
 	fEcho_Clean "        8      ST  aka Octal .................. 0-7"
 	fEcho_Clean "       10      ST  aka Decimal [default] ...... 0-9"
@@ -110,7 +121,7 @@ fSyntax(){  { ((doQuietly)) || ((wasShown_Syntax)); } && return; wasShown_Syntax
 
 fMain(){
 	## Generic variables
-	local -i wasShown_Version=0; wasShown_Copyright=0; local -i wasShown_About=0; wasShown_Syntax=0
+	local -i wasShown_Version=0; wasShown_Copyright=0; wasShown_About=0; wasShown_Syntax=0
 
 	## Pre-validation
 	_fMustBeInPath basename
@@ -299,23 +310,16 @@ fMain(){
 
 
 fShowOutput(){
-
 	local inputStr="$1"
-
-	#DEBUG
-	#fEchoVarAndVal doLowerCase
-
 	## Lower case if desired and valid
 	((doLowerCase)) && inputStr="${inputStr,,}"
 	local -r inputStr="${inputStr}"
-
 	if ((! doSilent)); then
 		echo "${inputStr}"
 	fi
 	if ((doUseClipOut)); then
 		echo -n "${inputStr}" | xclip -selection clipboard
 	fi
-
 }
 
 
@@ -332,10 +336,11 @@ fInit(){
 
 	## Determine if we need to show help
 	case " ${_allArgs,,} " in
-		*" -h "*|*" --help "*)                 fPrint_Copyright ; fPrint_About ; fPrint_Syntax ; exit 0 ;;
-		*" -v "*|*" --ver "*|*" --version "*)  fVersion                                        ; exit 0 ;;
+		*" -h "*|*" -help "*|*" --help "*)                fCopyright ; fAbout ; fSyntax ; exit 0 ;;
+		*" -a "*|*" -about "*|*" --about "*)              fCopyright ; fAbout           ; exit 0 ;;
+		*" -v "*|*" -ver "*|*" --ver "*|*" --version "*)  fVersion                      ; exit 0 ;;
 	esac
-	if [[ -z "$(_fStrTrim_byecho "${_allArgs}")" ]]; then fPrint_Copyright; fPrint_About; fPrint_Syntax; exit 1; fi
+	if [[ -z "$(_fStrTrim_byecho "${_allArgs}")" ]]; then fCopyright; fAbout; fSyntax; exit 1; fi
 
 	## Populate args array in a way that it stops at last non-empty value [GENERIC]
 	local -i highestNonEmpty=0
@@ -370,13 +375,14 @@ fInit(){
 			case "${tmpStr}" in
 
 				## Unitary switches (that take no extra params); Comment this test out if this script accepts no such thing.
-				"lc"*|*"case"|"lower"*)          doLowerCase=1  ;;
+				"lc"*|"lower"*)                  doLowerCase=1  ;;
 				"clip"*"in"|"ic"*)               doUseClipIn=1  ;;
 				"clip"*"out"|"oc"*)              doUseClipOut=1 ;;
 				"silent")                        doSilent=1     ;;
 
 				## Everything else, expecting a non-switch for next argument
-				"ib"*|"inb"*|"in-b"*|"bi"*|"basei"*|"base-i"*)	expectingSwitchParamForNextArg=1 ;;
+				"ibase"|"inbase"|"in-base"|"basein"|"base-in"|"from")	expectingSwitchParamForNextArg=1 ;;
+				"obase"|"outbase"|"out-base"|"baseout"|"base-out"|"to")	expectingSwitchParamForNextArg=1 ;;
 
 				"") : ;;  ## Special case of user passing bare "--". Usually means "end of arg processing", but ignore for now.
 
@@ -386,20 +392,26 @@ fInit(){
 			esac
 
 		else
-			## It's not an option switch; could be an option switch param, or a positional arg
 
+			## It's not an option switch; could be an option switch param, or a positional arg
 			if ((expectingSwitchParamForNextArg)); then
 				## Expecting option switch param
-
 				case "${lastSwitch,,}" in
-					"ib"*|"inb"*|"in-b"*|"bi"*|"basei"*|"base-i"*)  arg_inBase="${currentArg}"      ;;
-					*)                                              fThrowError "Unkown parameters. Switch: '--${lastSwitch}', current parameter: '${currentArg}'."  "${FUNCNAME[0]}" ;;
+					"ibase"|"inbase"|"in-base"|"basein"|"base-in"|"from")
+						arg_inBase="${currentArg}"
+					;;
+					"obase"|"outbase"|"out-base"|"baseout"|"base-out"|"to")
+						arg_outBase="${currentArg}"
+						argIsSet_arg_outBase=1
+					;;
+					*)
+						fThrowError "Unkown parameters. Switch: '--${lastSwitch}', current parameter: '${currentArg}'."  "${FUNCNAME[0]}"
+					;;
 				esac
 				expectingSwitchParamForNextArg=0
 
 			else
 				## Well it must be a positional arg then.
-
 				if ((! argIsSet_InputVal)) && (( ! doUseClipIn)); then
 					inputVal="${currentArg}"
 					argIsSet_InputVal=1
@@ -411,11 +423,9 @@ fInit(){
 				else
 					fThrowError "Unknown error. Current arg: '${currentArg}'."  "${FUNCNAME[0]}"
 				fi
-
 			fi
 
 		fi
-
 		(($wasLastArg)) && break
 	done
 
@@ -696,3 +706,9 @@ fMain "${1}" "${2}" "${3}" "${4}" "${5}" "${6}" "${7}" "${8}" "${9}" "${10}" "${
 ##			- Can no longer refer to bases by number alone, that aren't well-defined standards (e.g. 128).
 ##		- 20260424 JC: Removed base-26. Fuzz-testing revealed that `bc` can't do base-26.
 ##		- 20260425 JC: v1.0.0.
+##		- 20260426 JC:
+##			- v1.0.1, fully backwards compatible with v1.0.0.
+##			- Fixed '--help' bug.
+##			- Added '--from' as an alias for '--ibase'.
+##			- Added optional ability to explicitly specify output base as a flag (--obase or --to), rather than as a positional argument.
+##			- Updated --help text.

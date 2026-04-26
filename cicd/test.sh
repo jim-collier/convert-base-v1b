@@ -75,74 +75,101 @@ fMain(){
 		sleep 2
 	fi
 
-	set +e
+
+	####
+	#### Test flags (make sure -e is enabled)
+	set -e
+	fEcho; fEcho ">>> TESTSECTION: Flags"; fEcho
+
+	fEcho; fEcho "Test --help"
+	"${exe1}" --help
+
+	fEcho "Test --about"
+	"${exe1}" --about
+
+	fEcho "Test --version (again)"
+	"${exe1}" --version
+	fEcho_Clean_Force
 
 
 	####
 	#### Test base name aliases
+	set +e
+	fEcho; fEcho ">>> TESTSECTION: Base name aliases"; fEcho
 
 	inputVal="987654321000055555555550000123456789" #...................................: The value is less important than just the aliases. But also, a large value shouldn't fail either.
 	fTestAllAliases  "base10"  "${inputVal}" #..........................................: All should pass
-	fRunTest  'error'  "${expectVal}"  "'${exe1}'  '${inputVal}'  bogusBaseName" #...: This one should fail
+	fRunTest  'error'  "${expectVal}"  "'${exe1}'  '${inputVal}'  bogusBaseName" #......: This one should fail
 
 
 	####
 	#### Looped random fuzz-testing
+	set +e
 
 	## Loop counters for next sections
 	loopCount=100
 	((doLongTest))  &&  loopCount=5000
 
 	## Test **AGAINST SELF** (only bases 2, 8, 10, 16, 36)
+	fEcho; fEcho ">>> TESTSECTION: Fuzz-testing against self (with output bases necessarily limited to valid input bases)"; fEcho
 	fFuzzTest_LowerBases_RandomInOut_Self
 
 	#### Test **AGAINST v2** (all the bases)
+	fEcho; fEcho ">>> TESTSECTION: Fuzz-testing against v2 (all bases)"; fEcho
 	((doComareWith_v2))  &&  fFuzzTest_Base10_To_BaseX_AndBack_via_v2
 
 
 	####
 	#### Test val to use for next sections
-	inputVal="00012345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
+	inputVal="01234567899999999999999990123456789999999999999999123456789999999990000000000000000000000000000000000000000000000099999999999999999999999999999999999999876543210"
 
 
 	####
 	#### By-hand one-way tests, expect equal
+	fEcho; fEcho ">>> TESTSECTION: By-hand one-way tests, expect equal"; fEcho
+	set +e
 
 	## 128v1compat
 	#expectVal="$(convert-base-v1  "${inputVal}"  128j1)"  #; echo "${expectVal}"
-	expectVal="ẽ🝅q¥fᚧ▵jj⍩Ξ4⍩ŷᚠMϠÿ≈⍤prẌŶãʞ1HÃ⍋ϟ‡mpcδñjĥWHᚼh▿ĉp⍢ỹʬ1QfẅF1VpλμɤЖG2ĵ5Ϡ⍋Éw≠Éẍ🝅ᛘẅμ"
+	expectVal="FrĜЋŝĴR2§⁑⍤🝅⌲μr1ϟỹẼ⌲M§ỹλ🜥ψ🝅ᛘêᚼ75ĜᛝmÑ🜥Ĝλŝ▵ϠĜRλΞãᛎ8hÊᛯĝĵΩJĜ▿ĤxŴĵ£Cᛏẅ8ÂψvÉÉδPĝŷ"
 	fRunTest  '=='  "${expectVal}"  "'${exe1}'  ${inputVal}  128v1compat"
 
 	## 128j1
-	#expectVal="$(convert-base-v2  "${inputVal}"  128jc)"  # ; echo "${expectVal}" | ct
-	expectVal="⍩pT🜿NjqQQ҂ᛏ4҂¥iFᛯÔʞ◂SUĈδ⍤Y1D§±ᛦvRSMᛝ⌲QѢKDlPsЋS÷⍋▿1HNÎB1JSZa▸ᚠC2ф5ᛯ±ŴWλŴĴpdÎa"
-	fRunTest  '=='  "${expectVal}"  "'${exe1}'  ${inputVal}  128j1"
+	#expectVal="$(convert-base-v2  "${inputVal}"  128jc1)"  # ; echo "${expectVal}" | ct
+	expectVal="BUΩᛨ¢ΞI2🝅x◂p‡aU1ᛦ⍋¿‡F🝅⍋ZnᛘpdЖl75ΩfRɤnΩZ¢qᛯΩIZᛏ⍤b8P≠eЯфμEΩsƱXϠф🜥AcÎ8∞ᛘVŴŴᛝGЯ¥"
+	fRunTest  '=='  "${expectVal}"  "'${exe1}'  ${inputVal}  128jc1"
 
 
 	####
 	#### By-hand one-way tests, expect NOT equal
+	fEcho; fEcho ">>> TESTSECTION: By-hand one-way tests, expect NOT equal"; fEcho
+	set +e
 
 	## 128j1 != 128v1compat
 	#expectVal="$(convert-base-v1  "${inputVal}"  128j1)"  #; echo "${expectVal}"
-	expectVal="ẽ🝅q¥fᚧ▵jj⍩Ξ4⍩ŷᚠMϠÿ≈⍤prẌŶãʞ1HÃ⍋ϟ‡mpcδñjĥWHᚼh▿ĉp⍢ỹʬ1QfẅF1VpλμɤЖG2ĵ5Ϡ⍋Éw≠Éẍ🝅ᛘẅμ"
-	fRunTest  '!='  "${expectVal}"  "'${exe1}'  ${inputVal}  128j1"
+	expectVal="FrĜЋŝĴR2§⁑⍤🝅⌲μr1ϟỹẼ⌲M§ỹλ🜥ψ🝅ᛘêᚼ75ĜᛝmÑ🜥Ĝλŝ▵ϠĜRλΞãᛎ8hÊᛯĝĵΩJĜ▿ĤxŴĵ£Cᛏẅ8ÂψvÉÉδPĝŷ"
+	fRunTest  '!='  "${expectVal}"  "'${exe1}'  ${inputVal}  128jc1"
 
 
 	####
 	#### By-hand one-way tests, expect ERROR
+	fEcho; fEcho ">>> TESTSECTION: By-hand one-way tests, expect ERROR"; fEcho
+	set +e
 
 	## Removed base 16 as input, should error.
 	expectVal=""
-	fRunTest  'error'  "${expectVal}"  "'${exe1}'  --ibase 26  'ABCXYZ'  10"
+	fRunTest  'error'  "[anything or nothing]"  "'${exe1}'  --ibase 26  'ABCXYZ'  10"
 
 
 	####
 	#### By-hand round-trips self-tests, expect equal.
+	fEcho; fEcho ">>> TESTSECTION: By-hand round-trip tests, expect equal"; fEcho
+	set +e
 
-	expectVal="12345678999999999999999901234567899999999999999991234567899999999900000000000000000000000000000000000000000000000999999999999999999999999999999999999998765432100"
+	expectVal="1234567899999999999999990123456789999999999999999123456789999999990000000000000000000000000000000000000000000000099999999999999999999999999999999999999876543210"
 	fRunChained_TestLast  '=='  "${expectVal}"  "'${exe1}'  --ibase 10  ${inputVal}  base16 ; '${exe1}'  --ibase 16  %CMD1_OUTPUT%  base10"
 
-:;}
+:; set -e; }
 
 
 fFuzzTest_LowerBases_RandomInOut_Self(){
@@ -271,7 +298,7 @@ fTestAllAliases(){
 	local -r inputBase="${1:-}"  ; shift || true
 	local -r inputVal="${1:-}"   ; shift || true
 	for nextBase in "${baseAliasesArr[@]}"; do
-		fRunTest  'no_error'  "[any value]"  "'${exe1}'  --ibase ${inputBase}  ${inputVal}  ${nextBase}"
+		fRunTest  'no_error'  "[anything or nothing]"  "'${exe1}'  --ibase ${inputBase}  ${inputVal}  ${nextBase}"
 	done
 }
 

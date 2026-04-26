@@ -134,7 +134,17 @@ You can convert a value in one of these input numeric bases, to any other base i
 
 The chart below shows a big random base 10 number '2023090613425900000000000000001' in various bases.
 
-Note that some of the larger bases appear to have longer output - but that's only due to being rendered with proportional fonts, combined with some of the wider Unicode characters. Look at the "Chars" column to see the actual # of characters in the output.
+Example commands to generate output. All of these are equivalent commands:
+
+~~~
+convert-base-v1b  2023090613425900000000000000001  128jc1
+
+convert-base-v1b  --ibase 10  2023090613425900000000000000001  128jc1
+
+convert-base-v1b  -to base128jc1  -from base10  2023090613425900000000000000001
+~~~
+
+Note that some of the larger bases appear to have longer output - but that's only due to being rendered with proportional fonts, combined with some of the slightly wider (but still single-width) Unicode characters. Look at the "Chars" column to see the actual # of characters in the output.
 
 |Base         | Chars | Number representation
 |:--          | --:   | :--
