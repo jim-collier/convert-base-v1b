@@ -128,7 +128,7 @@ fMain(){
 	local -ra base8=($(echo {0..7}))
 	local -ra base10=($(echo {0..9}))
 	local -ra base16=($(echo {0..9} {A..F}))
-	local -ra base32r=($(echo {A..Z} {2..9})) #.............................................. RFC 4648
+	local -ra base32r=($(echo {A..Z} {2..7})) #.............................................. RFC 4648
 	local -ra base32h=($(echo {0..9} {A..V})) #.............................................. RFC 4648 hex
 	local -ra base64r=($(echo {A..Z} {a..z} {0..9} "+ /")) #................................. RFC 4648
 	local -ra base64u=($(echo {A..Z} {a..z} {0..9} "- _")) #................................. RFC 4648 url-safe variant

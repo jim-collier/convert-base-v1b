@@ -104,31 +104,31 @@ You can convert a value in one of these input numeric bases, to any other base i
 
 | Base        | Description                                                 | Symbols                           | Reference
 | :--         | :--                                                         | :--                               | :--
-| 2           | Binary                                                      | 0,1
-| 8           | Octal                                                       | 0-7
-| 10          | Decimal [default]                                           | 0-9
-| 16          | Hexadecimal                                                 | 0-9, A-F
-| 26          | Upper-case alphabet                                         | A-Z
-| 32[r]       | RFC 4648 §6                                                 | A-Z, 2-7                          | https://www.rfc-editor.org/rfc/rfc4648.html#section-6
-| 32h         | RFC 4648 §7 'Base32Hex'                                     | 0-9, A-V                          | https://www.rfc-editor.org/rfc/rfc4648.html#section-7
-| 32c         | Crockford's base-32                                         | 0-9, A-Z no I, L, O, U            | https://en.wikipedia.org/wiki/Base32#Crockford's_Base32
-| 32w         | Wordsafe base-32                                            | 2-9, CFGHJMPQRVWX, cfghjmpqrvwx   | https://en.wikipedia.org/wiki/Base32#Word-safe_alphabet
-| 36          | Numbers and upper-case alphabet                             | 0-9, A-Z                          | https://en.wikipedia.org/wiki/Base36
-| 38hostname  | Valid *nix host and domain name symbols                     |
-| 39username  | Valid *nix username symbols                                 |
-| 45email     | Valid HTML5 email tag symbols                               |
-| 48j1w       | 32w + unicode symbols                                       |
+| 2           | Binary                                                      | 01
+| 8           | Octal                                                       | 01234567
+| 10          | Decimal [default]                                           | 0123456789
+| 16          | Hexadecimal                                                 | 0123456789ABCDEF
+| 26          | Upper-case alphabet                                         | ABCDEFGHIJKLMNOPQRSTUVWXYZ
+| 32[r]       | RFC 4648 §6                                                 | ABCDEFGHIJKLMNOPQRSTUVWXYZ234567            | https://www.rfc-editor.org/rfc/rfc4648.html#section-6
+| 32h         | RFC 4648 §7 'Base32Hex'                                     | 0123456789ABCDEFGHIJKLMNOPQRSTUV            | https://www.rfc-editor.org/rfc/rfc4648.html#section-7
+| 32c         | Crockford's base-32 (0-9, A-Z no I, L, O, U)                | 0123456789ABCDEFGHJKMNPQRSTVWXYZ            | https://en.wikipedia.org/wiki/Base32#Crockford's_Base32
+| 32w         | Wordsafe base-32                                            | 23456789CFGHJMPQRVWXcfghjmpqrvwx            | https://en.wikipedia.org/wiki/Base32#Word-safe_alphabet
+| 36          | Numbers and upper-case alphabet                             | 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ        | https://en.wikipedia.org/wiki/Base36
+| 38hostname  | Valid *nix host and domain name symbols                     | 0123456789abcdefghijklmnopqrstuvwxyz-.
+| 39username  | Valid *nix username symbols                                 | 0123456789abcdefghijklmnopqrstuvwxyz-_.
+| 45email     | Valid HTML5 email tag symbols                               | 0123456789abcdefghijklmnopqrstuvwxyz-_%+.:@[]
+| 48jc1ws     | 32w + unicode symbols                                       | 32w + ʞλμᛎᛏᛘᛯᛝᛦᛨᚠᚧᚬᚼ🜣🜥
 | 52          | Both-case alphabetic                                        | A-Z, a-z
 | 62          | All alphanum, code point order (hex-style)                  | 0-9, A-Z, a-z                     | https://en.wikipedia.org/wiki/Base62
-| 64[r]       | RFC 4648 §5                                                 | 0-9, A-Z, a-z, +, /               | https://www.rfc-editor.org/rfc/rfc4648.html#section-4
-| 64u         | RFC 4648 §5; URL-safe                                       | 0-9, A-Z, a-z, -, _               | https://www.rfc-editor.org/rfc/rfc4648.html#section-5
-| 64h         | Hex-style base-64                                           |
-| 64j1        | Alternate to 64u (base 60 +2 unicode symbols)               | 0-9, A-Z, a-z, ʞ, λ
-| 64j1w       | 48j1w + more unicode symbols               |
-| 128j1w      | 64j1w + more unicode symbols                                |
-| 128j1       | Base  64j1 + more unicode symbols                           |
-| 256j1       | Base 128j1 + more unicode symbols                           |
-| 288j1       | Base 256j1 + more unicode symbols                           |
+| 64[r]       | RFC 4648 §5                                                 | A-Z, a-z, 0-9, +, /               | https://www.rfc-editor.org/rfc/rfc4648.html#section-4
+| 64u         | RFC 4648 §5; URL-safe                                       | A-Z, a-z, 0-9, -, _               | https://www.rfc-editor.org/rfc/rfc4648.html#section-5
+| 64h         | Hex-style base-64                                           | 0-9, A-Z, a-z, -, _
+| 64jc1       | Alternate to 64u (base 60 +2 unicode symbols)               | 0-9, A-Z, a-z, ʞ, λ
+| 64jc1ws     | 48jc1ws + more unicode symbols                              | 48jc1ws + 🜿🝅▵▸▿◂҂‡±⁑÷∞≈≠ΩƱ
+| 128jc1ws    | 64jc1ws + more unicode symbols                              | 64jc1ws + ΞψϠδϟЋЖЯѢф¢£¥§¿ɤʬ⍤⍩⌲⍋⍒⍢ÂĈÊĜĤÎĴÔŜÛŴŶẐâĉêĝĥîĵôŝûŵŷẑÃẼĨÑÕŨỸãẽĩñõũỹÄ
+| 128jc1      | Base  64cj1 + more unicode symbols                          | 64cj1 + μᛎᛏᛘᛯᛝᛦᛨᚠᚧᚬᚼ🜣🜥🜿🝅▵▸▿◂҂‡±⁑÷∞≈≠ΩƱΞψϠδϟЋЖЯѢф¢£¥§¿ɤʬ⍤⍩⌲⍋⍒⍢ÂĈÊĜĤÎĴÔŜÛŴ
+| 256jc1      | Base 128cj1 + more unicode symbols                          | [many more unicode]
+| 288jc1      | Base 256jc1 + more unicode symbols                          | [many more unicode]
 
 ## Example output
 
