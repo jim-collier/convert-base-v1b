@@ -182,16 +182,20 @@ Note that some of the larger bases appear to have longer output - but that's onl
 
 - In the future there may be good reasons for the output to change, for given arguments. (And/Or the expected arguments themselves might change.) For example, there are no "official standards" for large bases above 94 as of time of writing, but that could change. And even anything above 16, in most cases is fair game.
 
-- The point above already happened. `v1` already had enough minor issues. For example, it unwisely allowed  the referencing of bases that have no standard or even wide adoption (but might in the future), by number only. It also changed the definition of a couple of custom bases, to be more consistent. (But gave them different names, and relegated the old function names to "*v1compat".
+- The point above already happened. `v1` already had enough minor issues. For example, it unwisely allowed  the referencing of bases that have no standard or even wide adoption (but might in the future), by number only.
 
-	Those changes broke the user-facing API by definition.
+	So this new version, `v1b`, fixed that. It also changed the definition of a couple of custom bases to be more consistent (but gave them different names and relegated the old function names to *`v1compat`), and fixed an incorrect RFC standard base definition.
 
-	But it's more than just a semantic version name change. The old version has to still exist on some systems. Hence this can no longer be named `v1`. The "legacy" `v1` will continue to live on.
+	These changes in `v1b` broke the user-facing API in `v1` by definition.
+
+	But it's more than just a semantic version name change. The old version has to still exist on some systems, with other scripts consuming its interface. Hence this can no longer be named `v1`. The "legacy" `v1` will continue to live on in parallel.
 
 	But since `v2` is already underway, this can't be named that, so is now `v1b`. (Independent of the standard internal semantic naming convention adhered to.)
 
 ## Document history
 
+- 2026-05-03:
+	- Version naming rationale made more clear.
 - 2026-04-26:
 	- Updated for v1.0.1 (and v1.0.2).
 	- Fixed minor errors in this section.

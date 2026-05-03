@@ -8,6 +8,26 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.0.3
+
+Merged 2026-05-03
+
+### Notes
+
+- No meaningful change to `convert-base-v1b`.
+
+### Changed
+
+- Borrowed and lightly edited a copy of v2's more concise `base-definitions.sh`
+- Updated some paths in `cicd.sh`, broke, fixed.
+- Updated `test.sh`.
+- Minor clarifications to `README.md`.
+- Moved a line in `convert-base-v1b`.
+
+### Removed
+
+- `alias-definitions.sh` (moved contents into `base-definitions.sh`)
+
 ## v1.0.2
 
 Published 2026-04-26.
