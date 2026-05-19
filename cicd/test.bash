@@ -177,7 +177,7 @@ fTestAllAliases(){
 	local -r inputVal="${1:-}"   ; shift || true
 	for nextBase in "${baseAliasesArr[@]}"; do
 		fRunTest  'no_error'  "[anything or nothing]"  "'${exe1}'  --ibase ${inputBase}  ${inputVal}  ${nextBase}"
-	done; :
+	done;:
 }
 
 fFuzzTest_LowerBases_RandomInOut_Self(){
@@ -212,7 +212,7 @@ fFuzzTest_LowerBases_RandomInOut_Self(){
 		## To avoid falsely triggering an error:
 		## Strip off leading symbols representing '0' from input, which will be gone from the output during conversion.
 		expectVal="${inputStr}"
-		until [[ "${expectVal:0:1}" !=  "${inputBaseSymbols:0:1}" ]]; do expectVal="${expectVal:1}"; done
+		until [[ "${expectVal:0:1}" !=  "${inputBaseSymbols:0:1}" ]]; do expectVal="${expectVal:1}"; done;:
 		[[ -z "${expectVal}" ]]  &&  continue  ## If it's empty now, just skip to next test.
 
 		## Pick a random intermediate output base (but use input base because that's what we're limited to here).
@@ -240,7 +240,7 @@ fFuzzTest_LowerBases_RandomInOut_Self(){
 		## This command's output should be the same as the previous command's input.
 		fRunTest  '=='  "${expectVal}"  "'${exe1}'  --ibase '${intermediateBaseName}'  '${intermediateVal}'  '${inputBaseName}'"
 
-	done; :
+	done;:
 
 }
 
@@ -295,7 +295,7 @@ fFuzzTest_Base10_To_BaseX_AndBack_via_v2(){
 		## This command's output should be the same as the previous command's input.
 		fRunTest  '=='  "${expectVal}"  "'${exe2}'  --from '${intermediateBaseName}'  --to 10  --  '${intermediateVal}'"
 
-	done; :
+	done;:
 
 }
 
