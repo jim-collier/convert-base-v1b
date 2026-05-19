@@ -8,10 +8,30 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+<!--
+## NEXT VERSION
+
+### Notes
+
+### Added
+
+### Changed
+
+### Removed
+
+### Other work
+-->
+
 ## v1.0.3 (unreleased) - WIP
 
 ### Other work
 
+- Updates to CI/CD scripts [20250519]:
+	- Updated for less boilerplate
+	- Moved from ./utility to ./cicd/utility to be more logical, and consistent with other projects.
+	- Changed license (of CI/CD scripts) from GPL2 to MIT.
+	- Refreshed local copies of n8git_backup-and-publish and n8lib_test.
+- Global update in all bash scripts to side-step known potential edge-case unexpected behavior in `while...do...done`, by following all `done` with 'true'. [20250519]
 - Borrowed and lightly edited a copy of v2's more concise `base-definitions.sh`. [20250503]
 - Updated some paths in `cicd.sh`, broke, fixed. [20250503]
 - Updated `test.sh`. [20250503]
@@ -108,17 +128,3 @@ The rationale behind the minor but necessary breaking changes, and the version i
 ### Other work
 
 - Set up basic github repo structure.
-
-<!--
-## NEXT VERSION
-
-### Notes
-
-### Added
-
-### Changed
-
-### Removed
-
-### Other work
--->

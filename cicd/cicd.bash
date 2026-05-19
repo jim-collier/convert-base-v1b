@@ -194,7 +194,7 @@ fMain(){
 #••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 fCleanup(){
 	if ((! doQuietly)); then :
-	#	fEcho_Clean
+		fEcho_Clean
 	fi
 }
 
@@ -289,7 +289,6 @@ fPressAnyKeyToContinue(){
 	fEcho_Clean_Force
 	}
 
-##•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 ## Echo-related (minified but not obfuscated)
 declare -gi _wasLastEchoBlank=0
 declare -gi _isEchoInRawInlineMode=0
