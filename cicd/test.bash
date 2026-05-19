@@ -303,73 +303,56 @@ fFuzzTest_Base10_To_BaseX_AndBack_via_v2(){
 #••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 ## Generic function prototypes for reference and linting correctness. Overridden with real function when generic script is sourced at the bottom of this script.
 #••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-fEntryPoint(){
-	local -i count_Tests=0
-	local -i count_Passed=0
-	local -i count_Failed=0
-:;}
-fRunTest(){
-	local -r  testMode="${1:-}"   ; shift || true   ## 'equal', 'notequal', 'error'.
-	local -r  expectVal="${1:-}"  ; shift || true   ## Inherit from parent instead.
-	local -r  cmdStr="${1:-}"     ; shift || true
-:;}
-fRunChained_TestLast(){
-	local -r  testMode="${1:-}"   ; shift || true   ## 'equal', 'notequal', 'error'.
-	local -r  expectVal="${1:-}"  ; shift || true   ## Inherit from parent instead.
-	local -r  cmdStrs="${1:-}"    ; shift || true   ## >=1 commands with ';' as delimiter.
-:;}
-fPipe_LogAndShowPartialOutput_InitLogfile(){
-	local filePath_Log="${1:-}" ; shift || true  ## If you want to override the logfile path. Otherwise it's the path of this script+basename, + '.log'.
-:;}
-fPipe_LogAndShowPartialOutput(){ :; }
-fPipe_LogOnly(){ :; }
-fGetIsolatedExeName(){
-	local -n  retVarName_CmdName_1myq1b5="${1:-}"   ; shift || true   ## The parent variable to populate with the isolated command 'basename' (no path).
-	local -n  retVarName_TheRest_1myq1b5="${1:-}"   ; shift || true   ## The parent variable to populate with the rest of the command-line after the executable.
-	local -r  commandString="${1:-}"                ; shift || true   ## The full command line
-:;}
-fScrambleString(){
-	local -n  outputVarName_1myn9vt=${1:-}   ; shift || true  ## The parent variable to put the results in. The results should have no spaces, unless a space is one of the inputs as a symbol to randomize. But will still work with spaces.
-	local -r  inputSymbolList="${1:-}"       ; shift || true  ## List of symbols to scramble, as a regular UTF-8 bash string. Will have no spaces or delimiters, unless a space is one of the inputs as a symbol to randomize.
-	local -ri outputLen=${1:-1}              ; shift || true  ## Output scrambled string length
-	local -ri canRepeatChars=${1:-1}         ; shift || true  ## 0: Don't repeat any symbols if possible (i.e. if input len > output len). 1: Try to repeat symbols in the random output.
-}
-fTallyResult(){
-	local -ri errNum=${1:-0}      ; shift || true  ## The integer return value from the command.
-	local -r  testMode="${1:-}"   ; shift || true  ## 'equal', 'notequal', 'error'.
-	local -r  expectVal="${1:-}"  ; shift || true  ##
-	local -r  gotVal="${1:-}"     ; shift || true  ##
-:;}
-
-##•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-## Echo-related (minified but not obfuscated)
-declare -gi _wasLastEchoBlank=0
-declare -gi _isEchoInRawInlineMode=0
-fEcho_ResetBlankCounter()     { _wasLastEchoBlank=0;      }
-fEcho_WasLastEchoBlank_Set()  { { [[ "${1:-}" == "1" ]] && _wasLastEchoBlank=1; } || _wasLastEchoBlank=0;  }
-fEcho_WasLastEchoBlank_Get()  { { ((_wasLastEchoBlank > 0)) && return 0; } || return 1; }
-fEcho_IsInRawInlineMode_Set() { { [[ "${1:-}" == "1" ]] && _isEchoInRawInlineMode=1; } || { _isEchoInRawInlineMode=0; _wasLastEchoBlank=0; echo; }; }  ## Script it telling fEcho* that something is going to be echoing to the screen in non-linefeed mode without its knowledge. (E.g. "echo -n 'something: '".)
-fEcho_IsInRawInlineMode_Get() { { ((_isEchoInRawInlineMode)) && return 0; } || return 1; }
-fEcho_Clean_byref(){
-	## Validate nameref args:
-	[[ -v 1  ]] || fThrowError "Calling function must pass a nameref to supply the input value to this function, as arg1 (string to echo)."
-	## Gather args
-	local -n ptr_ToEcho_t5jf2=$1
-	## Logic
-	((_isEchoInRawInlineMode)) && fEcho_IsInRawInlineMode_Set 0
-	if [[ -n "${ptr_ToEcho_t5jf2}" ]]; then
-		echo -e "${ptr_ToEcho_t5jf2}"
-		_wasLastEchoBlank=0
-	elif [[ $_wasLastEchoBlank -eq 0 ]]; then
-		echo
-		_wasLastEchoBlank=1
-	fi
-}
-fEcho_Clean()        { local -r toEcho="${1:-}"; fEcho_Clean_byref toEcho; }
-fEcho()              { { [[ -z "${1:-}" ]] && fEcho_Clean ""; } || { local -r toEcho="[ ${1:-} ]"; fEcho_Clean_byref toEcho; }; }
-fEcho_Force()        { _wasLastEchoBlank=0; fEcho "${1:-}"; }
-fEcho_Clean_Force()  { _wasLastEchoBlank=0; local -r toEcho="${1:-}"; fEcho_Clean_byref toEcho; }
-
+# shellcheck disable=SC2034
+# shellcheck disable=SC2329
+(
+	fEntryPoint(){
+		local -i count_Tests=0
+		local -i count_Passed=0
+		local -i count_Failed=0
+	:;}
+	fRunTest(){
+		local -r  testMode="${1:-}"   ; shift || true   ## 'equal', 'notequal', 'error'.
+		local -r  expectVal="${1:-}"  ; shift || true   ## Inherit from parent instead.
+		local -r  cmdStr="${1:-}"     ; shift || true
+	:;}
+	fRunChained_TestLast(){
+		local -r  testMode="${1:-}"   ; shift || true   ## 'equal', 'notequal', 'error'.
+		local -r  expectVal="${1:-}"  ; shift || true   ## Inherit from parent instead.
+		local -r  cmdStrs="${1:-}"    ; shift || true   ## >=1 commands with ';' as delimiter.
+	:;}
+	fPipe_LogAndShowPartialOutput_InitLogfile(){
+		local filePath_Log="${1:-}" ; shift || true  ## If you want to override the logfile path. Otherwise it's the path of this script+basename, + '.log'.
+	:;}
+	fPipe_LogAndShowPartialOutput(){ :; }
+	fPipe_LogOnly(){ :; }
+	fGetIsolatedExeName(){
+		local -n  retVarName_CmdName_1myq1b5="${1:-}"   ; shift || true   ## The parent variable to populate with the isolated command 'basename' (no path).
+		local -n  retVarName_TheRest_1myq1b5="${1:-}"   ; shift || true   ## The parent variable to populate with the rest of the command-line after the executable.
+		local -r  commandString="${1:-}"                ; shift || true   ## The full command line
+	:;}
+	fScrambleString(){
+		local -n  outputVarName_1myn9vt=${1:-}   ; shift || true  ## The parent variable to put the results in. The results should have no spaces, unless a space is one of the inputs as a symbol to randomize. But will still work with spaces.
+		local -r  inputSymbolList="${1:-}"       ; shift || true  ## List of symbols to scramble, as a regular UTF-8 bash string. Will have no spaces or delimiters, unless a space is one of the inputs as a symbol to randomize.
+		local -ri outputLen=${1:-1}              ; shift || true  ## Output scrambled string length
+		local -ri canRepeatChars=${1:-1}         ; shift || true  ## 0: Don't repeat any symbols if possible (i.e. if input len > output len). 1: Try to repeat symbols in the random output.
+	}
+	fTallyResult(){
+		local -ri errNum=${1:-0}      ; shift || true  ## The integer return value from the command.
+		local -r  testMode="${1:-}"   ; shift || true  ## 'equal', 'notequal', 'error'.
+		local -r  expectVal="${1:-}"  ; shift || true  ##
+		local -r  gotVal="${1:-}"     ; shift || true  ##
+	:;}
+	fEcho_ResetBlankCounter()     { :; }
+	fEcho_WasLastEchoBlank_Set()  { local -i arg1=${1:-0}; }
+	fEcho_WasLastEchoBlank_Get()  { return 0; }
+	fEcho_IsInRawInlineMode_Set() { local -i arg1=${1:-0}; }
+	fEcho_IsInRawInlineMode_Get() { return 0; }
+	fEcho_Clean()                 { local arg1="${1:-0}"; }
+	fEcho()                       { local arg1="${1:-0}"; }
+	fEcho_Force()                 { local arg1="${1:-0}"; }
+	fEcho_Clean_Force()           { local arg1="${1:-0}"; }
+)
 
 #••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 ## Generic function(s) that can't be 'sourced'.
