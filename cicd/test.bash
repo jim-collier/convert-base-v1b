@@ -424,7 +424,7 @@ fi
 cd "${meDir_t4rgd}"
 
 ## Source the generic script 'utility/n8test'. It will call fMain() above.
-declare n8test_resolved="../utility/include/n8lib_test"
+declare n8test_resolved="utility/include/n8lib_test"
 fResolvePath  n8test_resolved  "${n8test_resolved}" ; readonly n8test_resolved
 [[ -z "${n8test_resolved}" ]] || source "${n8test_resolved}"
 

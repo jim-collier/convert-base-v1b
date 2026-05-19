@@ -35,7 +35,7 @@ if [[ -z "${doQuietly+x}" ]]; then
 	declare    dirPath_Source="${dirPath_Base}"
 	declare    filePath_ExecToTestAndInstall="${dirPath_Base}/convert-base-v1b"
 	declare    filePath_TestExec="${dirPath_Base}/cicd/test.bash"
-	declare    gitAutomationScript="${dirPath_Base}/utility/n8git_backup-and-publish"
+	declare    gitAutomationScript="${dirPath_Base}/cicd/utility/n8git_backup-and-publish"
 	declare -a preferredInstallPaths=("${HOME}/synced/0-0/common/exec/util/linux/bin"  "/usr/local/sbin/")  ## First one that exists, wins
 	declare -i isCompileProject=0  ## 1: E.g. C++, Rust, Go, etc.  0: E.g. Python, Bash, etc.
 
