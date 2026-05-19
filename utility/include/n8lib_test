@@ -21,26 +21,24 @@
 ##	History: At bottom of this file. (Note: History for this is maintained outside of [or in addition to] git project.)
 
 ##	Copyright © 2026 Jim Collier (ID: 1cv◂‡Vᛦ)
-##	Licensed under the GNU General Public License v2.0 or later. Full text at:
-##		https://spdx.org/licenses/GPL-2.0-or-later.html
-##	SPDX-License-Identifier: GPL-2.0-or-later
+##	Licensed under The MIT License (MIT). Full text at:
+##		https://mit-license.org/
+##	SPDX-License-Identifier: MIT
 
 
 #•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 # Generic code
-#•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+
 fEntryPoint(){
 
 	## Test if fMain exists in calling script
-	declare -F fMain &> /dev/null ||  { echo -e "\nCalling script must have a function named 'fMain()'.\n"; return 1; }
+	declare -F fMain_Test &> /dev/null ||  { echo -e "\nCalling script must have a function named 'fMain_Test()'.\n"; return 1; }
 
 	local -i count_Tests=0
 	local -i count_Passed=0
 	local -i count_Failed=0
 
-#	set +e
-		fMain
-#	set -e
+	fMain_Test
 
 	fEcho_Clean; fEcho_Clean "Results:"
 	fEcho_Clean "Total tests .........: ${count_Tests}"
@@ -81,16 +79,13 @@ fRunTest(){
 		isExpectingError=1
 		fEcho; fEcho "Test #${count_Tests} Expecting error, BEGIN ..."
 		set +e
-			gotVal="$(eval "${cmdStr}"  2> >(fPipe_LogOnly >&2))"  ## Send error messages to both stderr, and log
-			errNum=$?
-			true
+			gotVal="$(eval "${cmdStr}"  2> >(fPipe_LogOnly >&2))" ; errNum=$? ; true  ## Send error messages to both stderr, and log
+			sleep 0.125  ## Give output time to sync
 		set -e
 		fEcho "Test #${count_Tests} Expecting error, END."; fEcho
 		isExpectingError=0
 	else
-		gotVal="$(eval "${cmdStr}"  2> >(fPipe_LogOnly >&2))"  ## Send error messages to both stderr, and log
-		errNum=$?
-		true
+		gotVal="$(eval "${cmdStr}"  2> >(fPipe_LogOnly >&2))" ; errNum=$? ; true  ## Send error messages to both stderr, and log
 	fi
 	fTallyResult  $errNum  "${testMode}"  "${expectVal}"  "${gotVal}"
 
@@ -125,17 +120,16 @@ fRunTest(){
 	fEcho_Clean "Test command ...: '${exeName}'${exeArgs}"
 	fEcho_Clean "Expected value .: '${expectVal}'"
 	fEcho_Clean "Actual value ...: '${gotVal}'"
+	fEcho_Clean
 
 	if ((doConditionalAbortOnFirstError)) && ((doConditionalAbort)); then
-		sleep 0.5  ## Give time for stdout and stderr to sync
-		echo "[ ${meName_t4rge}.${FUNCNAME[0]}(): Exiting on first error as instructed. ]" 1>&2
+		fEcho_Clean
+		echo "[ ${meName_t4rge}.${FUNCNAME[0]}(): Exiting on first error as instructed." 1>&2
 		fEcho_Clean_Force
 		trap - ERR
 		set -e
 		return 1
 	fi
-
-	fEcho_Clean
 
 :;}
 
@@ -188,7 +182,6 @@ fPipe_LogAndShowPartialOutput_InitLogfile(){
 	__fPipe_Log_isInitialized=1
 }
 fPipe_LogAndShowPartialOutput() {
-	## Coded by Claude Opus 4.7 Adaptive, 20260424-070027.
 
 	local LC_ALL=C.UTF-8
 	local line now secs frac ms ts cols max_w w cw i len ch cp trunc_idx
@@ -225,11 +218,10 @@ fPipe_LogAndShowPartialOutput() {
 		done
 		printf '%s\n' "$line"
 	done
-:;}
+}
 fPipe_LogOnly() {
 	((! __fPipe_Log_isInitialized)) && return
 	## Send stderr to this, e.g. somecmd 2> >(fPipe_LogOnly >&2) | fPipe_LogAndShowPartialOutput
-	## Coded by Claude Opus 4.7 Adaptive, 20260424.
     local LC_ALL=C.UTF-8
     local line now secs frac ms ts
     while IFS= read -r line || [[ -n $line ]]; do
@@ -261,7 +253,6 @@ fGetIsolatedExeName(){
 }
 
 fScrambleString(){
-	## Coded by Claude Opus 4.7 Adaptive, 20260423-162519
 
 	## Args
 	local -n  outputVarName_1myn9vt=${1:-}   ; shift || true  ## The parent variable to put the results in. The results should have no spaces, unless a space is one of the inputs as a symbol to randomize. But will still work with spaces.
@@ -345,28 +336,44 @@ fResolvePath_t4rge(){
 	parentVarName_ResolvedPath_t4rej="${testPath}"
 }
 
-## Echo-handling
-declare -i _wasLastEchoBlank=0
-declare -i _isEchoInRawInlineMode=0
+## Echo-related (minified but not obfuscated)
+declare -gi _wasLastEchoBlank=0
+declare -gi _isEchoInRawInlineMode=0
 fEcho_ResetBlankCounter()     { _wasLastEchoBlank=0;      }
-fEcho_WasLastEchoBlank_Set()  { { [[ "${1}" == "1" ]]  &&  _wasLastEchoBlank=1; }  ||  _wasLastEchoBlank=0;  }
-fEcho_WasLastEchoBlank_Get()  { { ((_wasLastEchoBlank > 0))  &&  return 0; }  ||  return 1; }
-fEcho_IsInRawInlineMode_Set() { { [[ "${1}" == "1" ]]  &&  _isEchoInRawInlineMode=1; }  ||  _isEchoInRawInlineMode=1; }  ## Script it telling fEcho* that something is going to be echoing to the screen in non-linefeed mode without its knowledge. (E.g. "echo -n 'something: '".)
-fEcho_IsInRawInlineMode_Get() { { ((_isEchoInRawInlineMode))  &&  return 0; }  ||  return 1; }
-fEcho_Clean(){
-	((_isEchoInRawInlineMode))  &&  { echo; _wasLastEchoBlank=0; _isEchoInRawInlineMode=0; }
-	if [[ -n "${1:-}" ]]; then echo -e "$*"; _wasLastEchoBlank=0; elif [[ $_wasLastEchoBlank -eq 0 ]]; then echo; _wasLastEchoBlank=1; fi; }
-fEcho()                   { if [[ -n "$*" ]]; then fEcho_Clean "[ $* ]"; else fEcho_Clean ""; fi; }
-fEcho_Force()             { fEcho_ResetBlankCounter; fEcho "$*";       }
-fEcho_Clean_Force()       { fEcho_ResetBlankCounter; fEcho_Clean "$*"; }
+fEcho_WasLastEchoBlank_Set()  { { [[ "${1:-}" == "1" ]] && _wasLastEchoBlank=1; } || _wasLastEchoBlank=0;  }
+fEcho_WasLastEchoBlank_Get()  { { ((_wasLastEchoBlank > 0)) && return 0; } || return 1; }
+fEcho_IsInRawInlineMode_Set() { { [[ "${1:-}" == "1" ]] && _isEchoInRawInlineMode=1; } || { _isEchoInRawInlineMode=0; _wasLastEchoBlank=0; echo; }; }  ## Script it telling fEcho* that something is going to be echoing to the screen in non-linefeed mode without its knowledge. (E.g. "echo -n 'something: '".)
+fEcho_IsInRawInlineMode_Get() { { ((_isEchoInRawInlineMode)) && return 0; } || return 1; }
+fEcho_Clean_byref(){
+	## Validate nameref args:
+	[[ -v 1  ]] || fThrowError "Calling function must pass a nameref to supply the input value to this function, as arg1 (string to echo)."
+	## Gather args
+	local -n ptr_ToEcho_t5jf2=$1
+	## Logic
+	((_isEchoInRawInlineMode)) && fEcho_IsInRawInlineMode_Set 0
+	if [[ -n "${ptr_ToEcho_t5jf2}" ]]; then
+		echo -e "${ptr_ToEcho_t5jf2}"
+		_wasLastEchoBlank=0
+	elif [[ $_wasLastEchoBlank -eq 0 ]]; then
+		echo
+		_wasLastEchoBlank=1
+	fi
+}
+fEcho_Clean()        { local -r toEcho="${1:-}"; fEcho_Clean_byref toEcho; }
+fEcho()              { { [[ -z "${1:-}" ]] && fEcho_Clean ""; } || { local -r toEcho="[ ${1:-} ]"; fEcho_Clean_byref toEcho; }; }
+fEcho_Force()        { _wasLastEchoBlank=0; fEcho "${1:-}"; }
+fEcho_Clean_Force()  { _wasLastEchoBlank=0; local -r toEcho="${1:-}"; fEcho_Clean_byref toEcho; }
 
 ## Error-handling
 declare -i isExpectingError=0
 declare -i count_Errors_Unexpected=0
 declare -i count_Errors_Expected=0
 #trap 'printf "(line %s) " "$LINENO" "$?" >&2; echo; { ((isExpectingError))  &&  ((++count_Errors_Expected)); }  ||  ((++count_Errors_Unexpected))' ERR
-trap '_errNo=$?; { ((isExpectingError))  &&  ((++count_Errors_Expected)); }  ||  ((++count_Errors_Unexpected)); sleep 0.25; echo "ERR: errno=${_errNo} line=${LINENO} command: ${BASH_COMMAND}" >&2' ERR
+trap '{ ((isExpectingError))  &&  ((++count_Errors_Expected)); }  ||  ((++count_Errors_Unexpected))' ERR
 
+
+#•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+## Script entry point
 
 ## Error and exit settings
  set   -u  ## Require variable declaration. Stronger than mere linting. But can struggle if functions are in sourced files.
@@ -383,7 +390,7 @@ declare -i isSourced_t4rhs; { (return 0 2>/dev/null) && isSourced_t4rhs=1; } || 
 ((! isSourced_t4rhs)) && { echo -e "\nThis script is meant to be 'sourced' from within another script.\n"; exit 1; }
 
 if [[ -z "${meName_t4rge+x}" ]]; then
-	declare -r mePath_t4rge="$(realpath -e "${BASH_SOURCE[0]}")"
+	declare -r mePath_t4rge="${BASH_SOURCE[0]}"
 	declare -r meName_t4rge="$(basename "${mePath_t4rge}")"
 	declare -r meDir_t4rge="$(dirname "${mePath_t4rge}")"
 	declare -r serialDT_t4rge="$(date "+%Y%m%d-%H%M%S")"
@@ -395,8 +402,14 @@ fi
 
 
 
+
 ##	Script history:
 ##		- 20260420 JC: Copied for convert-base-v2.
 ##		- 20260421 JC: Added polish.
 ##		- 20260423 JC: Added fRunChained_TestLast() to be able to test commands that can't be piped.
 ##		- 20260424 JC: Made generic.
+##		- 20260518 JC: Changed calling fMain() to fMain_Test().
+##		- 20260519 JC:
+##			- Updated fEcho_* to template canonical.
+##			- Changed license from GPL 2, to MIT.
+##			- Fixed an egregious regression in fScrambleString() whose fix wasn't pushed upstream, where $inputSymbolList validation was validated literally as `[[ -z "" ]`.

@@ -26,23 +26,23 @@
 ##		- This is NOT part of cicd script, as it's not a requirement to have v2 installed.
 ##	History: At bottom of this file. (Note: History for this is maintained outside of [or in addition to] git project.)
 
-##	Copyright
-##		Copyright © 2026 Jim Collier (ID: 1cv◂‡Vᛦ)
-##		Licensed under the GNU General Public License v2.0 or later. Full text at:
-##			https://spdx.org/licenses/GPL-2.0-or-later.html
-##		SPDX-License-Identifier: GPL-2.0-or-later
+##	Copyright © 2026 Jim Collier (ID: 1cv◂‡Vᛦ)
+##	Licensed under The MIT License (MIT). Full text at:
+##		https://mit-license.org/
+##	SPDX-License-Identifier: MIT
+
 
 ## Global settings
 set -e
 declare doLongTest=0 ; [[ "${CICDTEST_DO_LONGTEST}" == "1" ]] && doLongTest=1
 
-fMain(){
+fMain_Test(){
 
 	## Settings
 	exe1="../convert-base-v1b"
 	exe2="convert-base-v2"  ## Optional, doesn't need to exist for tests to run and complete.
-	baseDefs="base-definitions.sh"
-#	aliasDefs="alias-definitions.sh"
+	baseDefs="base-definitions.bash"
+#	aliasDefs="alias-definitions.bash"
 
 	## Environment overrides
 	local LANG="C.UTF-8"  ## Splitting won't work correctly without this
@@ -340,15 +340,35 @@ fTallyResult(){
 	local -r  expectVal="${1:-}"  ; shift || true  ##
 	local -r  gotVal="${1:-}"     ; shift || true  ##
 :;}
-fEcho_ResetBlankCounter()     { :; }
-fEcho_WasLastEchoBlank_Set()  { local -i arg1=${1:-0}; }
-fEcho_WasLastEchoBlank_Get()  { return 0; }
-fEcho_IsInRawInlineMode_Set() { local -i arg1=${1:-0}; }
-fEcho_IsInRawInlineMode_Get() { return 0; }
-fEcho_Clean()             { local -i arg1="${1:-0}"; }
-fEcho()                   { local -i arg1="${1:-0}"; }
-fEcho_Force()             { local -i arg1="${1:-0}"; }
-fEcho_Clean_Force()       { local -i arg1="${1:-0}"; }
+
+##•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+## Echo-related (minified but not obfuscated)
+declare -gi _wasLastEchoBlank=0
+declare -gi _isEchoInRawInlineMode=0
+fEcho_ResetBlankCounter()     { _wasLastEchoBlank=0;      }
+fEcho_WasLastEchoBlank_Set()  { { [[ "${1:-}" == "1" ]] && _wasLastEchoBlank=1; } || _wasLastEchoBlank=0;  }
+fEcho_WasLastEchoBlank_Get()  { { ((_wasLastEchoBlank > 0)) && return 0; } || return 1; }
+fEcho_IsInRawInlineMode_Set() { { [[ "${1:-}" == "1" ]] && _isEchoInRawInlineMode=1; } || { _isEchoInRawInlineMode=0; _wasLastEchoBlank=0; echo; }; }  ## Script it telling fEcho* that something is going to be echoing to the screen in non-linefeed mode without its knowledge. (E.g. "echo -n 'something: '".)
+fEcho_IsInRawInlineMode_Get() { { ((_isEchoInRawInlineMode)) && return 0; } || return 1; }
+fEcho_Clean_byref(){
+	## Validate nameref args:
+	[[ -v 1  ]] || fThrowError "Calling function must pass a nameref to supply the input value to this function, as arg1 (string to echo)."
+	## Gather args
+	local -n ptr_ToEcho_t5jf2=$1
+	## Logic
+	((_isEchoInRawInlineMode)) && fEcho_IsInRawInlineMode_Set 0
+	if [[ -n "${ptr_ToEcho_t5jf2}" ]]; then
+		echo -e "${ptr_ToEcho_t5jf2}"
+		_wasLastEchoBlank=0
+	elif [[ $_wasLastEchoBlank -eq 0 ]]; then
+		echo
+		_wasLastEchoBlank=1
+	fi
+}
+fEcho_Clean()        { local -r toEcho="${1:-}"; fEcho_Clean_byref toEcho; }
+fEcho()              { { [[ -z "${1:-}" ]] && fEcho_Clean ""; } || { local -r toEcho="[ ${1:-} ]"; fEcho_Clean_byref toEcho; }; }
+fEcho_Force()        { _wasLastEchoBlank=0; fEcho "${1:-}"; }
+fEcho_Clean_Force()  { _wasLastEchoBlank=0; local -r toEcho="${1:-}"; fEcho_Clean_byref toEcho; }
 
 
 #••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
@@ -421,10 +441,13 @@ fEntryPoint | fPipe_LogAndShowPartialOutput
 #••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 ##	Script history:
 #••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-##		- 20260420 JC: Copied test.sh to test_against_v2.sh.
+##		- 20260420 JC: Copied from test.sh.
 ##		- 20260425 JC: Finished.
 ##		- 20260426 JC: Fixed a bug where base array for testing started at 1 instead of 0, as an artifact a bad earlier design decision.
 ##		- 20260427 JC:
 ##			- Updated fResolvePath().
 ##			- Fixed bugs in loops natural end, caused by not setting `set +e`.
 ##		- 20260428 JC: Removed now-unnecessary reference to alias-definitions.sh.
+##		- 20260519 JC:
+##			- Updated fEcho functions.
+##			- Changed license from GPL2 to MIT.
