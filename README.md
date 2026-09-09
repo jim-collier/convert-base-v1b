@@ -210,5 +210,5 @@ Note that some of the larger bases appear to have longer output - but that's onl
 
 ## Copyright and license
 
-> Copyright © 2023-2026 Jim Collier (ID: 1cv◂‡Vᛦ)<br>
+> Copyright © 2023-2026 Jim Collier [ID: 2უNაɘ«҂թȹɤξπ๙¿ձϖ]<br>
 > Licensed under GNU GPL v2 <https://www.gnu.org/licenses/gpl-2.0.html>. No warranty.
