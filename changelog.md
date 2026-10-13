@@ -31,13 +31,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 	- Moved from ./utility to ./cicd/utility to be more logical, and consistent with other projects.
 	- Changed license (of CI/CD scripts) from GPL2 to MIT.
 	- Refreshed local copies of n8git_backup-and-publish and n8lib_test.
+
 - Global update in all bash scripts to side-step known potential edge-case unexpected behavior in `while...do...done`, by following all `done` with 'true'. [20250519]
+
 - Borrowed and lightly edited a copy of v2's more concise `base-definitions.sh`. [20250503]
+
 - Updated some paths in `cicd.sh`, broke, fixed. [20250503]
+
 - Updated `test.sh`. [20250503]
+
 - Minor clarifications to `README.md`. [20250503]
+
 - Moved a line in `convert-base-v1b`. [20250503]
+
 - Removed `alias-definitions.sh` (moved contents into `base-definitions.sh`) [20250503]
+
 - Minor edits to this file to make it more "changelog idiomatic". [20250503]
 
 ## v1.0.2 - 2026-04-26
@@ -45,17 +53,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Added option `--from` as an alias to `--ibase`. [20260426]
+
 - Added optional flag `--obase` (and alias `--to`), as an alternative to specifying the base as a positional argument. [20260426]
 
 ### Changed
 
 - Minor change to the way `--version` and `--about` are shown. [20260426]
+
 - Bug fix: `--help` produced an error. It was trying to call non-existent function `fPrint_Help()`, rather than `fHelp()` [20260426]
 
 ### Other work
 
 - Minor additions and clarifications to README.md. [20260426]
+
 - Updated inline help, and README.md, to reflect additional interfaces. [20260426]
+
 - Updated testing to also test new flags. [20260426]
 
 ## `convert-base-v1b` v1.0.0 - 2026-04-25
@@ -78,28 +90,39 @@ The rationale behind the minor but necessary breaking changes, and the version i
 	- Base: 128j1. Is now redefined as a left-most subset of 256j1 (and 288j1), for consistency. Extends base-62.
 	- Base: 128j1w. Replaces what used to be 128j1. Extends 48j1w and 64j1w (all now consistent with 32w), but is now different than the old removed 128j1.
 	- Alias: 64j1u -> 64j1.
+
 - More base aliases. [20260425]
 
 ### Changed
 
 - Renamed base 64j1u -> 64j1 for consistency with other bases. [20260423]
+
 - 38username -> 39username. (Added an extra, valid username character.) [20260423]
+
 - While older aliases still work, the advertised base names have been more streamlined and rationalized. [20260425]
+
 - Fixed numerous minor bugs found in fuzz testing. [20260425]
+
 - Improved help; now sorts by base #, rather than grouping them in category chunks. Added a column of whether its a standard base, pseudostandard, published, or custom (rather than aforementioned groups). [20260425]
 
 ### Removed
 
 - Base: 48j1. Was too inconsistent with 32w as a "word-safe" base. [20260423]
+
 - Base: 64j1uw. Was too inconsistent with 32w as a "word-safe" base. [20260423]
+
 - Base: 128j1. Was too inconsistent with 32w as a "word-safe" base, and different than 256j1 and 288j1. [20260423]
+
 - Removed all unadorned large custom base numbers (e.g. "128") as aliases for bases that don't have well-defined standards. [20260423]
 
 ### Other work
 
 - Added scripting for exhaustive fuzz testing, including of base names and aliases (caught many edge-case bugs). [20260425]
+
 - Added scripting for exhaustive fuzz testing against v2. Even in beta, v2 can accurately handle _inputs_ of all the bases, whereas testing against self is limited to the input bases this version supports. In this way, v1b can be tested against all the bases it supports. [20260425]
+
 - Polished CI/CD/Dogfood scripts. [20260425]
+
 - Updated README.md with better and accurate examples. [20260425]
 
 ## `convert-base-v1` v1.0.0-beta1 (unreleased) - 2026-04-17
@@ -107,12 +130,14 @@ The rationale behind the minor but necessary breaking changes, and the version i
 ### Changed
 
 - Changed license from GPLv3 to GPLv2.
+
 - Changed name from `x9convertbase1` to `convert-base-v1`.
 	- This convention: `x9convertbase1` would get confusing for v2. `x9convertbase2`??
 
 ### Removed
 
 - Removed all unused script boilerplate
+
 - Removed base94ascii. It was causing a bug.
 
 ### Other work

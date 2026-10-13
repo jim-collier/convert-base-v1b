@@ -136,7 +136,7 @@ The chart below shows a big random base 10 number '20230906134259000000000000000
 
 Example commands to generate output. All of these are equivalent commands:
 
-~~~
+~~~bash
 convert-base-v1b  2023090613425900000000000000001  128jc1
 
 convert-base-v1b  --ibase 10  2023090613425900000000000000001  128jc1
@@ -210,5 +210,5 @@ Note that some of the larger bases appear to have longer output - but that's onl
 
 ## Copyright and license
 
-> Copyright © 2023-2026 Jim Collier (ID: 1cv◂‡Vᛦ)<br>
+> Copyright © 2023-2026 Jim Collier [ID: 2უNაɘ«҂թȹɤξπ๙¿ձϖ]<br>
 > Licensed under GNU GPL v2 <https://www.gnu.org/licenses/gpl-2.0.html>. No warranty.
