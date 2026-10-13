@@ -19,7 +19,7 @@
 ##		- See bottom of file for examples of numbers in various bases, and the space-saving percentages.
 ##	History: At bottom of this file. (Note: History for this is maintained outside of [or in addition to] git project.)
 
-##	Copyright © 2022-2026 Jim Collier (ID: 1cv◂‡Vᛦ)
+##	Copyright © 2022-2026 Jim Collier [ID: 2უNაɘ«҂թȹɤξπ๙¿ձϖ]
 ##	Licensed under the GNU General Public License v2.0 or later. Full text at:
 ##		https://spdx.org/licenses/GPL-2.0-or-later.html
 ##	SPDX-License-Identifier: GPL-2.0-or-later
@@ -32,7 +32,7 @@ declare -i    doQuietly=0; [[ "${X9CONVERTBASE1_QUIET}" == "1" ]] && doQuietly=1
 declare       thisVersion="v1.0.3"
 declare       thisBuild="1mzfcej"
 declare       thisCopyrightYear="2023-2026"
-declare       thisAuthor="Jim Collier (ID: 1cv◂‡Vᛦ)"
+declare       thisAuthor="Jim Collier [ID: 2უNაɘ«҂թȹɤξπ๙¿ձϖ]"
 
 
 ## Version, copyright, about, syntax (minified but not obfuscated)
